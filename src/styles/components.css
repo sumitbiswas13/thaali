@@ -26,7 +26,9 @@
   width: 64px;
   height: 64px;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(192, 57, 43, 0.25));
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(32, 25, 26, 0.18);
 }
 .brand-text {
   display: flex;
