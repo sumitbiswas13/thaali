@@ -11,16 +11,42 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
+  min-height: 96px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 .brand {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 10px;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 600;
+  gap: 14px;
   letter-spacing: -0.02em;
+}
+.brand-icon {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(173, 15, 100, 0.25));
+}
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.brand-mark {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.brand-slogan {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--magenta);
+  font-weight: 500;
 }
 .brand .dot { color: var(--magenta); }
 .nav-actions { display: flex; align-items: center; gap: 12px; }
@@ -260,4 +286,8 @@
   .stats { grid-template-columns: 1fr; gap: calc(var(--space) * 3); text-align: center; }
   .ingredient-row { grid-template-columns: 1fr 1fr; }
   .hero { padding: calc(var(--space) * 6) 0 calc(var(--space) * 4); }
+  .brand-mark { font-size: 2.1rem; }
+  .brand-icon { width: 44px; height: 44px; }
+  .brand-slogan { font-size: 0.62rem; letter-spacing: 0.14em; }
+  .brand { gap: 10px; }
 }
