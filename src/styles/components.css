@@ -26,7 +26,7 @@
   width: 64px;
   height: 64px;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(173, 15, 100, 0.25));
+  filter: drop-shadow(0 2px 4px rgba(192, 57, 43, 0.25));
 }
 .brand-text {
   display: flex;
@@ -45,14 +45,14 @@
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--magenta);
+  color: var(--saffron);
   font-weight: 500;
 }
-.brand .dot { color: var(--magenta); }
+.brand .dot { color: var(--saffron); }
 .nav-actions { display: flex; align-items: center; gap: 12px; }
 
 /* ── Hero ─────────────────────────────────────────── */
-.hero { padding: calc(var(--space) * 9) 0 calc(var(--space) * 6); background: var(--pink-wash); }
+.hero { padding: calc(var(--space) * 9) 0 calc(var(--space) * 6); }
 .hero-inner { max-width: 720px; }
 .eyebrow {
   font-family: var(--font-mono);
@@ -63,7 +63,7 @@
   margin-bottom: 18px;
 }
 .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); margin-bottom: 20px; }
-.hero h1 .accent { color: var(--magenta); font-style: italic; }
+.hero h1 .accent { color: var(--saffron); font-style: italic; }
 .hero p.lede { font-size: 1.2rem; color: var(--ink-soft); max-width: 56ch; margin-bottom: 30px; }
 .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
 .promise {
@@ -100,7 +100,7 @@
 .card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(32, 25, 26, 0.08); }
 .card-media {
   aspect-ratio: 4 / 3;
-  background: linear-gradient(135deg, var(--magenta-glow), var(--magenta));
+  background: linear-gradient(135deg, var(--turmeric), var(--saffron));
   position: relative;
   display: grid;
   place-items: center;
@@ -146,20 +146,20 @@
   transition: all 0.15s ease;
 }
 .chip[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.chip:hover { border-color: var(--magenta); }
+.chip:hover { border-color: var(--saffron); }
 
 /* ── Community stats bar ──────────────────────────── */
 .stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: calc(var(--space) * 2);
-  background: linear-gradient(135deg, var(--magenta), var(--magenta-deep));
-  color: #fff;
+  background: var(--ink);
+  color: var(--paper);
   border-radius: var(--radius);
   padding: calc(var(--space) * 4);
   margin: calc(var(--space) * 7) 0;
 }
-.stat .num { font-family: var(--font-display); font-size: 2.6rem; color: #fff; }
+.stat .num { font-family: var(--font-display); font-size: 2.6rem; color: var(--turmeric); }
 .stat .label { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8; }
 
 /* ── Auth + forms ─────────────────────────────────── */
@@ -184,7 +184,7 @@
   font-size: 1rem;
   background: var(--paper);
 }
-.field input:focus, .field textarea:focus { border-color: var(--magenta); outline: none; }
+.field input:focus, .field textarea:focus { border-color: var(--saffron); outline: none; }
 .divider {
   display: flex; align-items: center; gap: 12px;
   color: var(--ink-soft); font-size: 0.85rem;
@@ -209,25 +209,25 @@
 .step-num {
   font-family: var(--font-display);
   font-size: 1.3rem;
-  color: var(--magenta);
+  color: var(--saffron);
   padding-top: 8px;
 }
 .imported-tag {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: var(--magenta-deep);
-  background: var(--pink-wash);
-  opacity: 1;
+  color: var(--cumin);
+  background: var(--turmeric);
+  opacity: 0.9;
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   display: inline-block;
   margin-left: 8px;
 }
-.row-remove { color: var(--magenta-deep); font-size: 1.3rem; align-self: center; }
+.row-remove { color: var(--paprika); font-size: 1.3rem; align-self: center; }
 .add-row {
   font-family: var(--font-mono);
   font-size: 0.85rem;
-  color: var(--magenta);
+  color: var(--saffron);
   padding: 6px 0;
 }
 
@@ -236,7 +236,7 @@
 .recipe-detail .hero-img {
   aspect-ratio: 16 / 9;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--magenta-glow), var(--magenta-deep));
+  background: linear-gradient(135deg, var(--turmeric), var(--paprika));
   display: grid; place-items: center;
   margin-bottom: 24px;
 }
@@ -250,7 +250,7 @@
 .method-list li::before {
   content: counter(step);
   position: absolute; left: 0; top: 12px;
-  font-family: var(--font-display); font-size: 1.4rem; color: var(--magenta);
+  font-family: var(--font-display); font-size: 1.4rem; color: var(--saffron);
 }
 
 /* ── Featured cooks + activity ────────────────────── */
@@ -261,7 +261,7 @@
 }
 .cook .avatar {
   width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 12px;
-  background: linear-gradient(135deg, var(--magenta), var(--magenta-deep));
+  background: linear-gradient(135deg, var(--saffron), var(--paprika));
 }
 .cook .name { font-weight: 600; }
 .cook .count { font-size: 0.82rem; color: var(--ink-soft); font-family: var(--font-mono); }
