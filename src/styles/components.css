@@ -225,7 +225,7 @@
   display: inline-block;
   margin-left: 8px;
 }
-.row-remove { color: var(--paprika); font-size: 1.3rem; align-self: center; }
+.row-remove { color: #c0392b; font-size: 1.3rem; align-self: center; }
 .add-row {
   font-family: var(--font-mono);
   font-size: 0.85rem;

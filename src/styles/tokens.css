@@ -6,9 +6,9 @@
   --ink-soft: #5d5152;       /* muted text */
   --paper: #f7f0d8;          /* very light mustard — page bg */
   --paper-raised: #ffffff;   /* card surfaces */
-  --saffron: #e8821e;        /* primary accent — saffron */
-  --paprika: #c0392b;        /* deep accent / hover */
-  --turmeric: #f3b83f;       /* highlight / glow */
+  --saffron: #a87d18;        /* primary accent — dark mustard */
+  --paprika: #876214;        /* deep accent / hover — deeper mustard */
+  --turmeric: #d9b441;       /* highlight / glow — light mustard */
   --cumin: #8a6d3b;          /* secondary warm */
   --line: #e7ded0;           /* hairline dividers on paper */
   --line-strong: #d4c7b2;
