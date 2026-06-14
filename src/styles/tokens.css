@@ -1,17 +1,17 @@
 :root {
-  /* Palette — "kitchen warmth, modern lens"
-     Not the cream/serif/terracotta default. A spice-drawer palette:
-     saffron + paprika against a deep iron-skillet charcoal and warm paper. */
-  --ink: #20191a;            /* iron-skillet charcoal — primary text */
-  --ink-soft: #5d5152;       /* muted text */
-  --paper: #fbf7f0;          /* warm paper — page bg */
+  /* Palette — "white + magenta + light pink"
+     Clean white canvas, soft pink surfaces, magenta as the bold accent. */
+  --ink: #2b1a26;            /* deep plum-charcoal — primary text */
+  --ink-soft: #6b5563;       /* muted mauve-grey text */
+  --paper: #ffffff;          /* white — page bg */
   --paper-raised: #ffffff;   /* card surfaces */
-  --saffron: #e8821e;        /* primary accent — saffron */
-  --paprika: #c0392b;        /* deep accent / hover */
-  --turmeric: #f3b83f;       /* highlight / glow */
-  --cumin: #8a6d3b;          /* secondary warm */
-  --line: #e7ded0;           /* hairline dividers on paper */
-  --line-strong: #d4c7b2;
+  --pink-wash: #fdeef5;      /* light pink — section bands / tints */
+  --pink-soft: #fbdce9;      /* soft pink — borders / hovers */
+  --magenta: #d6177f;        /* primary accent — magenta */
+  --magenta-deep: #ad0f64;   /* deep magenta / hover */
+  --magenta-glow: #f3a8cf;   /* light magenta highlight */
+  --line: #f3dde8;           /* hairline dividers (pink-tinted) */
+  --line-strong: #e6c2d4;
 
   /* Type */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
@@ -70,21 +70,21 @@ img { max-width: 100%; display: block; }
   transition: transform 0.12s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 .btn-primary {
-  background: var(--saffron);
+  background: var(--magenta);
   color: #fff;
-  box-shadow: 0 2px 0 rgba(192, 57, 43, 0.25);
+  box-shadow: 0 2px 0 rgba(173, 15, 100, 0.25);
 }
-.btn-primary:hover { background: var(--paprika); transform: translateY(-1px); }
+.btn-primary:hover { background: var(--magenta-deep); transform: translateY(-1px); }
 .btn-ghost {
   background: transparent;
   color: var(--ink);
   border: 1.5px solid var(--line-strong);
 }
-.btn-ghost:hover { border-color: var(--saffron); color: var(--paprika); }
+.btn-ghost:hover { border-color: var(--magenta); color: var(--magenta-deep); }
 
 /* Focus visibility — accessibility floor */
 :focus-visible {
-  outline: 3px solid var(--turmeric);
+  outline: 3px solid var(--magenta-glow);
   outline-offset: 2px;
   border-radius: 6px;
 }
