@@ -1,11 +1,16 @@
-// Mock in-memory data for the prototype.
+// ---------------------------------------------------------------------------
+// Data module — Option A (public teaser + live app).
 //
-// Honesty-over-vanity (from the handoff): every stat shown in the UI is
-// DERIVED from this data, never hardcoded. Small-but-real beats big-but-fake.
-// When Supabase is wired, replace these arrays with live queries — the
-// derive* helpers below keep working unchanged.
+// Landing page uses the STATIC seed data below as a permanent showcase, so the
+// homepage is never empty and shows real recipe cards with "Join to open"
+// locks (a signup funnel). The actual app (Home / Recipe / Submit, after
+// sign-in) uses the LIVE `recipes` array, filled from Supabase by loadRecipes().
+// ---------------------------------------------------------------------------
 
-export const recipes = [
+import { fetchRecipes } from './recipes.js';
+
+// ── STATIC SEED DATA (Landing teaser — not the database) ──
+export const seedRecipes = [
   {
     id: 'r1',
     title: 'Everyday Dal Tadka',
@@ -44,11 +49,47 @@ export const recipes = [
   { id: 'r6', title: 'Cardamom Chai', author: 'Sumi', cuisine: 'Indian', course: 'Drink', prep_time: 3, cook_time: 8, servings: 2, difficulty: 'Easy', description: 'Strong, milky, fragrant.', locked: true, ingredients: [], steps: [] },
 ];
 
-export const cooks = [
-  { id: 'c1', display_name: 'Sumi', bio: 'Home cook, building Thaali.', recipe_ids: recipes.map((r) => r.id) },
+export const seedCooks = [
+  { id: 'c1', display_name: 'Sumi', bio: 'Home cook, building Thaali.', recipe_ids: seedRecipes.map((r) => r.id) },
 ];
 
-// The single demo recipe a URL-import always returns in the prototype.
+// ── Landing stat helpers (run off the stable seed showcase) ──
+export const deriveStats = () => ({
+  recipes: seedRecipes.length,
+  cooks: seedCooks.length,
+  categories: new Set(seedRecipes.map((r) => r.cuisine).filter(Boolean)).size,
+});
+
+// ── LIVE DATA (the real app, post sign-in) ──
+export const recipes = [];
+export const cooks = [];
+
+export async function loadRecipes() {
+  let rows = [];
+  try {
+    rows = await fetchRecipes();
+  } catch (err) {
+    console.error('Failed to load recipes:', err);
+    rows = [];
+  }
+  recipes.length = 0;
+  recipes.push(...rows);
+
+  const byAuthor = new Map();
+  for (const r of recipes) {
+    const name = r.author || 'anonymous';
+    if (!byAuthor.has(name)) byAuthor.set(name, []);
+    byAuthor.get(name).push(r.id);
+  }
+  cooks.length = 0;
+  for (const [name, ids] of byAuthor) {
+    cooks.push({ id: 'cook-' + name, display_name: name, recipe_ids: ids });
+  }
+  return recipes;
+}
+
+export const deriveCategories = () => [...new Set(recipes.map((r) => r.cuisine).filter(Boolean))];
+
 export const demoImport = {
   title: 'Imported: Classic Margherita Pizza',
   source_url: 'https://example.com/margherita',
@@ -65,12 +106,3 @@ export const demoImport = {
     { instruction: 'Top with sauce and torn mozzarella.', imported: false },
   ],
 };
-
-// ── Derived stats (never hardcoded) ──
-export const deriveStats = () => ({
-  recipes: recipes.length,
-  cooks: cooks.length,
-  categories: new Set(recipes.map((r) => r.cuisine)).size,
-});
-
-export const deriveCategories = () => [...new Set(recipes.map((r) => r.cuisine))];

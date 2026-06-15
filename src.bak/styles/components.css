@@ -1,0 +1,87 @@
+/* ===========================================================================
+   Thaali — styles for auth + recipe views.
+   Append to your existing stylesheet, or import this file.
+   Colors reference the mustard tokens from src/styles/tokens.css:
+     --bg:        #f7f0d8   (very light mustard)
+     --accent:    #a87d18   (dark mustard)
+     --accent-2:  #876214   (hover)
+     --highlight: #d9b441   (light mustard)
+     --danger:    #c0392b   (delete red)
+   If your token names differ, the fallbacks below keep things working.
+   =========================================================================== */
+
+:root {
+  --bg: var(--saffron-bg, #f7f0d8);
+  --accent: var(--saffron, #a87d18);
+  --accent-2: var(--saffron-dark, #876214);
+  --highlight: var(--saffron-light, #d9b441);
+  --danger: #c0392b;
+  --card: #ffffff;
+  --text: #2b2b2b;
+  --muted: #7a7567;
+}
+
+/* --- shared buttons / inputs ---------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  border: none; border-radius: 8px; padding: .65rem 1.1rem;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: background .15s ease, opacity .15s ease;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-2); }
+.btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.btn-ghost:hover { background: rgba(168,125,24,.08); }
+.btn-google { background: #fff; color: #3c4043; border: 1px solid #dadce0; width: 100%; }
+.btn-google:hover { background: #f8f9fa; }
+
+.auth-input {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid #d9cfa8; border-radius: 8px;
+  padding: .6rem .75rem; font-size: 1rem; margin-bottom: .9rem;
+  background: #fff; color: var(--text);
+}
+.auth-input:focus { outline: 2px solid var(--highlight); border-color: var(--accent); }
+.auth-label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .3rem; color: var(--muted); }
+
+/* --- auth view ------------------------------------------------------------- */
+.auth-view { min-height: 70vh; display: grid; place-items: center; padding: 2rem 1rem; }
+.auth-card {
+  background: var(--card); border-radius: 16px; padding: 2rem;
+  width: 100%; max-width: 380px; box-shadow: 0 6px 24px rgba(0,0,0,.08);
+}
+.auth-title { margin: 0 0 .2rem; font-size: 1.6rem; color: var(--text); }
+.auth-sub { margin: 0 0 1.5rem; color: var(--accent); font-weight: 600; }
+.auth-divider { display: flex; align-items: center; text-align: center; margin: 1.1rem 0; color: var(--muted); }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: #e4dcc0; }
+.auth-divider span { padding: 0 .7rem; font-size: .85rem; }
+.auth-status { display: block; margin-top: .8rem; font-size: .9rem; color: var(--accent-2); min-height: 1.2em; }
+
+/* --- recipes view ---------------------------------------------------------- */
+.recipes-view { max-width: 980px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.recipes-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+.recipes-title { margin: 0; font-size: 2rem; color: var(--text); }
+.recipes-sub { margin: .2rem 0 0; color: var(--muted); font-size: .9rem; }
+.recipes-actions { display: flex; gap: .6rem; }
+
+.recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+.recipe-card { background: var(--card); border-radius: 12px; padding: 1.1rem; box-shadow: 0 3px 12px rgba(0,0,0,.06); border-top: 3px solid var(--highlight); }
+.recipe-card-title { margin: 0 0 .4rem; font-size: 1.15rem; color: var(--text); }
+.recipe-card-desc { margin: 0 0 .8rem; color: var(--muted); font-size: .92rem; }
+.recipe-card-meta { display: flex; justify-content: space-between; align-items: center; font-size: .82rem; }
+.recipe-card-buttons { display: flex; gap: .6rem; }
+
+.link-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-weight: 600; font-size: .85rem; padding: 0; }
+.link-btn:hover { color: var(--accent-2); text-decoration: underline; }
+.link-btn.danger { color: var(--danger); }
+
+/* --- editor ---------------------------------------------------------------- */
+.editor { background: var(--card); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+.editor.hidden { display: none; }
+.editor-title { margin: 0 0 1rem; color: var(--text); }
+.editor-buttons { display: flex; align-items: center; gap: .8rem; margin-top: .4rem; }
+
+/* --- utility --------------------------------------------------------------- */
+.muted { color: var(--muted); }
+.error { color: var(--danger); }
+.hidden { display: none; }

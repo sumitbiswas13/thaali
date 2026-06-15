@@ -1,6 +1,6 @@
 import { Header, Footer } from '../components/layout.js';
 import { RecipeCard } from '../components/RecipeCard.js';
-import { seedRecipes as recipes, seedCooks as cooks, deriveStats } from '../lib/mockData.js';
+import { recipes, cooks, deriveStats } from '../lib/mockData.js';
 import { isSignedIn } from '../lib/auth.js';
 
 export function Landing() {
