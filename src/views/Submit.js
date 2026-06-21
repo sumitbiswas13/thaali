@@ -1,9 +1,11 @@
 import { Header, Footer } from '../components/layout.js';
 import { onMount, navigate } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
-import { loadRecipes } from '../lib/mockData.js';
-import { createRecipe, uploadRecipeImage } from '../lib/recipes.js';
+import { loadRecipes, findRecipe } from '../lib/mockData.js';
+import { createRecipe, updateRecipe, uploadRecipeImage, canEdit } from '../lib/recipes.js';
 import { CUISINES, COURSES, DIFFICULTIES } from '../lib/categories.js';
+
+const MAX_IMAGES = 4;
 
 // Build <option> markup, marking the recipe's current value as selected.
 function options(list, current) {
@@ -12,22 +14,41 @@ function options(list, current) {
   const opts = list
     .map((o) => `<option value="${o}" ${o.toLowerCase() === sel.toLowerCase() ? 'selected' : ''}>${o}</option>`)
     .join('');
-  // If an imported value isn't in our list, keep it as a one-off selected option.
   const extra = sel && !has ? `<option value="${esc(sel)}" selected>${esc(sel)}</option>` : '';
   return `<option value="">—</option>${opts}${extra}`;
 }
 
-export function Submit() {
+export function Submit(params = {}) {
   if (!isSignedIn()) {
     navigate('/auth');
     return '';
   }
 
+  // Edit mode: #/submit?edit=<slug|short_code|uuid>
+  const editing = params.edit ? findRecipe(params.edit) : null;
+  if (params.edit && !editing) {
+    navigate('/home');
+    return '';
+  }
+  if (editing && !canEdit(editing)) {
+    // Not the owner/admin — bounce to the recipe.
+    navigate('/recipe?id=' + (editing.slug || editing.short_code || editing.id));
+    return '';
+  }
+
   onMount(() => {
+    const formWrap = document.getElementById('submit-form');
+
+    // In edit mode, skip the import bar and render the form straight away,
+    // pre-filled from the existing recipe.
+    if (editing) {
+      renderForm(formWrap, { ...editing, imported_fields: [] }, editing);
+      return;
+    }
+
     const importBtn = document.querySelector('[data-action="import"]');
     const urlInput = document.getElementById('import-url');
     const importMsg = document.getElementById('import-msg');
-    const formWrap = document.getElementById('submit-form');
 
     async function runImport() {
       const url = urlInput.value.trim();
@@ -51,10 +72,8 @@ export function Submit() {
             ? 'Imported what we could find — review and fill in the rest below.'
             : 'Found the page but no recipe data — start from the blank form below.';
           importMsg.className = 'import-msg ok';
-          // Carry the original link through to publish for attribution.
           renderForm(formWrap, { source_url: url, ...data.recipe });
         } else {
-          // Graceful fallback: open a blank form so the cook can type it in.
           importMsg.textContent =
             (data.error || 'Could not import that page.') + ' You can still add it by hand below.';
           importMsg.className = 'import-msg warn';
@@ -82,37 +101,49 @@ export function Submit() {
     });
   });
 
-  return `
-    ${Header()}
-    <main class="wrap">
-      <div class="section-head"><h2>Add a recipe</h2></div>
-
+  const heading = editing ? 'Edit recipe' : 'Add a recipe';
+  const importSection = editing
+    ? ''
+    : `
       <div class="import-bar">
         <input type="url" id="import-url" placeholder="Paste a recipe link — yours or anywhere" />
         <button class="btn btn-primary" data-action="import">Read the page</button>
       </div>
       <p class="import-msg" id="import-msg"></p>
-      <button class="add-row" data-action="scratch">or start from scratch →</button>
+      <button class="add-row" data-action="scratch">or start from scratch →</button>`;
 
+  return `
+    ${Header()}
+    <main class="wrap">
+      <div class="section-head"><h2>${heading}</h2></div>
+      ${importSection}
       <div id="submit-form"></div>
     </main>
     ${Footer()}
   `;
 }
 
-function renderForm(wrap, data) {
+// `existing` is the recipe being edited (or null for a new one).
+function renderForm(wrap, data, existing = null) {
   const tag = (f) => (data.imported_fields?.includes(f) ? '<span class="imported-tag">imported</span>' : '');
+
+  // Seed the gallery: existing images[], else the single image_url, else empty.
+  let gallery = Array.isArray(data.images) && data.images.length
+    ? [...data.images]
+    : data.image_url
+    ? [data.image_url]
+    : [];
+  // Title image = image_url if set, else first gallery image.
+  let titleImg = data.image_url || gallery[0] || null;
 
   wrap.innerHTML = `
     <div class="panel" style="max-width:none;margin-top:24px;">
 
       <div class="field">
-        <label>Photo</label>
-        <div class="photo-field">
-          <div class="photo-preview" id="photo-preview">
-            ${data.image_url ? `<img src="${esc(data.image_url)}" alt="" />` : '<span class="muted">No photo yet</span>'}
-          </div>
-          <input type="file" id="f-image" accept="image/*" hidden />
+        <label>Photos <span class="muted">(up to ${MAX_IMAGES}; tap one to make it the cover)</span></label>
+        <div class="gallery-edit" id="gallery"></div>
+        <input type="file" id="f-image" accept="image/*" hidden />
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
           <button type="button" class="btn btn-ghost" data-action="choose-photo">Add a photo</button>
           <span class="import-msg" id="photo-status"></span>
         </div>
@@ -154,15 +185,18 @@ function renderForm(wrap, data) {
       <button class="add-row" data-add="step">+ add step</button>
 
       <div style="margin-top:28px;display:flex;gap:12px;align-items:center;">
-        <button class="btn btn-primary" data-action="publish">Publish recipe</button>
+        <button class="btn btn-primary" data-action="publish">${existing ? 'Save changes' : 'Publish recipe'}</button>
         <span class="auth-status" id="submit-status"></span>
       </div>
     </div>
   `;
 
-  // State the form holds onto across edits: the uploaded photo URL and the
-  // original source link (set when imported).
-  const formState = { image_url: data.image_url || null, source_url: data.source_url || null };
+  const formState = {
+    gallery,
+    titleImg,
+    source_url: data.source_url || null,
+    editingId: existing ? existing.id : null,
+  };
   wireForm(wrap, formState);
 }
 
@@ -177,7 +211,6 @@ function ingRow(ing = {}) {
 }
 
 function stepRow(step = {}, i = 0) {
-  // timer_seconds is stored in seconds; show it to cooks as minutes.
   const mins = step.timer_seconds ? Math.round(step.timer_seconds / 60) : '';
   return `
     <div class="step-row">
@@ -207,26 +240,78 @@ function wireForm(wrap, formState) {
   wrap.querySelector('#f-cook')?.addEventListener('input', updateTotal);
   updateTotal();
 
-  // --- photo upload ---
+  // --- gallery (multi-image) ---
+  const galleryEl = wrap.querySelector('#gallery');
   const fileInput = wrap.querySelector('#f-image');
   const photoStatus = wrap.querySelector('#photo-status');
-  const preview = wrap.querySelector('#photo-preview');
-  wrap.querySelector('[data-action="choose-photo"]')?.addEventListener('click', () => fileInput.click());
+  const chooseBtn = wrap.querySelector('[data-action="choose-photo"]');
+
+  function paintGallery() {
+    if (!formState.gallery.length) {
+      galleryEl.innerHTML = '<span class="muted">No photos yet</span>';
+    } else {
+      galleryEl.innerHTML = formState.gallery
+        .map((url, idx) => {
+          const isTitle = url === formState.titleImg;
+          return `
+            <div class="gthumb ${isTitle ? 'is-title' : ''}" data-idx="${idx}">
+              <img src="${esc(url)}" alt="" />
+              ${isTitle ? '<span class="gthumb-badge">Cover</span>' : `<button type="button" class="gthumb-make" data-make="${idx}">Set cover</button>`}
+              <button type="button" class="gthumb-remove" data-remove-img="${idx}" aria-label="remove">×</button>
+            </div>`;
+        })
+        .join('');
+    }
+    // Hide the add button once we hit the cap.
+    chooseBtn.style.display = formState.gallery.length >= MAX_IMAGES ? 'none' : '';
+    bindGallery();
+  }
+
+  function bindGallery() {
+    galleryEl.querySelectorAll('[data-make]').forEach((btn) => {
+      btn.onclick = () => {
+        formState.titleImg = formState.gallery[Number(btn.dataset.make)];
+        paintGallery();
+      };
+    });
+    galleryEl.querySelectorAll('[data-remove-img]').forEach((btn) => {
+      btn.onclick = () => {
+        const idx = Number(btn.dataset.removeImg);
+        const removed = formState.gallery[idx];
+        formState.gallery.splice(idx, 1);
+        // If we removed the cover, fall back to the first remaining image.
+        if (removed === formState.titleImg) formState.titleImg = formState.gallery[0] || null;
+        paintGallery();
+      };
+    });
+  }
+
+  chooseBtn?.addEventListener('click', () => fileInput.click());
   fileInput?.addEventListener('change', async () => {
     const file = fileInput.files?.[0];
     if (!file) return;
+    if (formState.gallery.length >= MAX_IMAGES) {
+      photoStatus.textContent = `Up to ${MAX_IMAGES} photos.`;
+      photoStatus.className = 'import-msg warn';
+      return;
+    }
     photoStatus.textContent = 'Uploading photo…';
     photoStatus.className = 'import-msg';
     try {
-      formState.image_url = await uploadRecipeImage(file);
-      preview.innerHTML = `<img src="${formState.image_url}" alt="" />`;
-      photoStatus.textContent = 'Photo ready.';
+      const url = await uploadRecipeImage(file);
+      formState.gallery.push(url);
+      if (!formState.titleImg) formState.titleImg = url; // first one becomes cover
+      photoStatus.textContent = 'Photo added.';
       photoStatus.className = 'import-msg ok';
+      paintGallery();
     } catch (err) {
       photoStatus.textContent = err.message;
       photoStatus.className = 'import-msg warn';
+    } finally {
+      fileInput.value = '';
     }
   });
+  paintGallery();
 
   wrap.querySelector('[data-add="ingredient"]')?.addEventListener('click', () => {
     document.getElementById('ingredients').insertAdjacentHTML('beforeend', ingRow({}));
@@ -237,6 +322,7 @@ function wireForm(wrap, formState) {
     document.getElementById('steps').insertAdjacentHTML('beforeend', stepRow({}, count));
     bindRemovers(wrap);
   });
+
   wrap.querySelector('[data-action="publish"]')?.addEventListener('click', async (e) => {
     const status = document.getElementById('submit-status');
     const recipe = collect(wrap, formState);
@@ -245,14 +331,18 @@ function wireForm(wrap, formState) {
       return;
     }
     e.target.disabled = true;
-    status.textContent = 'Publishing…';
+    status.textContent = formState.editingId ? 'Saving…' : 'Publishing…';
     try {
-      await createRecipe(recipe);
+      if (formState.editingId) {
+        await updateRecipe(formState.editingId, recipe);
+      } else {
+        await createRecipe(recipe);
+      }
       await loadRecipes();
       navigate('/home');
     } catch (err) {
       e.target.disabled = false;
-      status.textContent = 'Publish failed: ' + err.message;
+      status.textContent = (formState.editingId ? 'Save' : 'Publish') + ' failed: ' + err.message;
     }
   });
   bindRemovers(wrap);
@@ -283,6 +373,12 @@ function collect(wrap, formState) {
     })
     .filter((s) => s.instruction);
 
+  // Order the gallery so the cover is first, then persist both fields.
+  const cover = formState.titleImg || formState.gallery[0] || null;
+  const images = cover
+    ? [cover, ...formState.gallery.filter((u) => u !== cover)]
+    : [...formState.gallery];
+
   return {
     title: val('f-title'),
     description: val('f-desc'),
@@ -292,7 +388,8 @@ function collect(wrap, formState) {
     prep_time: num('f-prep'),
     cook_time: num('f-cook'),
     servings: num('f-servings'),
-    image_url: formState.image_url,
+    image_url: cover,
+    images,
     source_url: formState.source_url,
     ingredients,
     steps,

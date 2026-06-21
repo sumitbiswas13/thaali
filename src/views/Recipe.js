@@ -74,11 +74,36 @@ export function Recipe(params) {
     r.difficulty || '',
   ].filter(Boolean);
 
+  // Gallery: prefer the images[] array; fall back to the single image_url.
+  const gallery =
+    Array.isArray(r.images) && r.images.length ? r.images : r.image_url ? [r.image_url] : [];
+  const cover = r.image_url || gallery[0] || null;
+
   // Pretty short share URL — prefer slug, then short_code, then uuid.
   const shareKey = r.slug || r.short_code || r.id;
   const shareUrl = `${location.origin}/#/recipe?id=${shareKey}`;
 
   onMount(() => {
+    // --- lightbox: click hero or any thumbnail to view full image ---
+    const lightbox = document.querySelector('#lightbox');
+    const lightboxImg = document.querySelector('#lightbox-img');
+    function openLightbox(src) {
+      if (!src) return;
+      lightboxImg.src = src;
+      lightbox.hidden = false;
+    }
+    function closeLightbox() {
+      lightbox.hidden = true;
+      lightboxImg.src = '';
+    }
+    document.querySelectorAll('[data-img]').forEach((el) => {
+      el.addEventListener('click', () => openLightbox(el.dataset.img));
+    });
+    document.querySelector('[data-action="close-lightbox"]')?.addEventListener('click', closeLightbox);
+    lightbox?.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox(); // click backdrop to dismiss
+    });
+
     // --- delete recipe ---
     document.querySelector('[data-action="delete-recipe"]')?.addEventListener('click', async (e) => {
       if (!confirm(`Delete "${r.title}"? This can't be undone.`)) return;
@@ -232,8 +257,20 @@ export function Recipe(params) {
     ${Header()}
     <main class="wrap recipe-detail">
       <div class="hero-img">${
-        r.image_url ? `<img class="hero-photo" src="${esc(r.image_url)}" alt="${esc(r.title)}" />` : '<div class="platter"></div>'
+        cover
+          ? `<img class="hero-photo" src="${esc(cover)}" alt="${esc(r.title)}" data-img="${esc(cover)}" />`
+          : '<div class="platter"></div>'
       }</div>
+      ${
+        gallery.length > 1
+          ? `<div class="gallery-strip">${gallery
+              .map(
+                (url) =>
+                  `<button class="gstrip-thumb" data-img="${esc(url)}"><img src="${esc(url)}" alt="" /></button>`
+              )
+              .join('')}</div>`
+          : ''
+      }
       ${eyebrow ? `<p class="eyebrow">${esc(eyebrow)}</p>` : ''}
       <h1>${esc(r.title)}</h1>
       <p class="lede" style="font-size:1.1rem;">${esc(r.description || '')}</p>
@@ -275,7 +312,10 @@ export function Recipe(params) {
       }
       ${
         editable
-          ? `<div style="margin-top:16px;"><button class="btn btn-ghost" data-action="delete-recipe">Delete recipe</button></div>`
+          ? `<div style="margin-top:16px;display:flex;gap:12px;">
+               <a class="btn btn-ghost" href="#/submit?edit=${r.slug || r.short_code || r.id}">Edit recipe</a>
+               <button class="btn btn-ghost" data-action="delete-recipe">Delete recipe</button>
+             </div>`
           : ''
       }
 
@@ -290,6 +330,11 @@ export function Recipe(params) {
         </div>
         <ul class="comment-list" id="comment-list"><li class="muted">Loading comments…</li></ul>
       </section>
+
+      <div class="lightbox" id="lightbox" hidden>
+        <button class="lightbox-close" data-action="close-lightbox" aria-label="close">×</button>
+        <img class="lightbox-img" id="lightbox-img" src="" alt="" />
+      </div>
     </main>
     ${Footer()}
   `;

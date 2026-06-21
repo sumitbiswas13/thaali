@@ -44,6 +44,7 @@ export async function createRecipe(recipe) {
     servings: recipe.servings ?? null,
     difficulty: recipe.difficulty ?? null,
     image_url: recipe.image_url ?? null,
+    images: recipe.images ?? [],
     source_url: recipe.source_url ?? null,
     ingredients: recipe.ingredients ?? [],
     steps: recipe.steps ?? [],
