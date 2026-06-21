@@ -3,6 +3,19 @@ import { onMount, navigate } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
 import { loadRecipes } from '../lib/mockData.js';
 import { createRecipe } from '../lib/recipes.js';
+import { CUISINES, COURSES, DIFFICULTIES } from '../lib/categories.js';
+
+// Build <option> markup, marking the recipe's current value as selected.
+function options(list, current) {
+  const sel = (current || '').trim();
+  const has = list.some((x) => x.toLowerCase() === sel.toLowerCase());
+  const opts = list
+    .map((o) => `<option value="${o}" ${o.toLowerCase() === sel.toLowerCase() ? 'selected' : ''}>${o}</option>`)
+    .join('');
+  // If an imported value isn't in our list, keep it as a one-off selected option.
+  const extra = sel && !has ? `<option value="${esc(sel)}" selected>${esc(sel)}</option>` : '';
+  return `<option value="">—</option>${opts}${extra}`;
+}
 
 export function Submit() {
   if (!isSignedIn()) {
@@ -101,9 +114,9 @@ function renderForm(wrap, data) {
       </div>
 
       <div class="field-row" style="display:flex;gap:12px;flex-wrap:wrap;">
-        <div class="field"><label>Cuisine ${tag('cuisine')}</label><input type="text" id="f-cuisine" value="${esc(data.cuisine)}" placeholder="Indian" /></div>
-        <div class="field"><label>Course ${tag('course')}</label><input type="text" id="f-course" value="${esc(data.course)}" placeholder="Main" /></div>
-        <div class="field"><label>Difficulty</label><input type="text" id="f-difficulty" value="${esc(data.difficulty)}" placeholder="Easy" /></div>
+        <div class="field"><label>Cuisine ${tag('cuisine')}</label><select id="f-cuisine">${options(CUISINES, data.cuisine)}</select></div>
+        <div class="field"><label>Course ${tag('course')}</label><select id="f-course">${options(COURSES, data.course)}</select></div>
+        <div class="field"><label>Difficulty</label><select id="f-difficulty">${options(DIFFICULTIES, data.difficulty)}</select></div>
       </div>
       <div class="field-row" style="display:flex;gap:12px;flex-wrap:wrap;">
         <div class="field"><label>Prep (min)</label><input type="number" id="f-prep" value="${esc(data.prep_time)}" placeholder="10" /></div>

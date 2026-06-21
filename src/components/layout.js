@@ -1,4 +1,16 @@
-import { isSignedIn } from '../lib/auth.js';
+import { isSignedIn, currentUser } from '../lib/auth.js';
+
+function headerAvatar() {
+  const u = currentUser();
+  if (!u) return '';
+  const url = u.user_metadata?.avatar_url || u.user_metadata?.picture || null;
+  const name = u.user_metadata?.full_name || u.user_metadata?.name || u.email || '?';
+  const initial = name.trim().charAt(0).toUpperCase();
+  const inner = url
+    ? `<img src="${url}" alt="" class="nav-avatar-img" referrerpolicy="no-referrer" />`
+    : `<span class="nav-avatar-fallback">${initial}</span>`;
+  return `<a class="nav-avatar" href="#/profile" title="Your profile">${inner}</a>`;
+}
 
 export function Header() {
   const signedIn = isSignedIn();
@@ -15,9 +27,10 @@ export function Header() {
         <nav class="nav-actions">
           ${
             signedIn
-              ? `<a class="btn btn-ghost" href="#/submit">Add a recipe</a>
-                 <a class="btn btn-ghost" href="#/profile">Profile</a>
-                 <button class="btn btn-ghost" data-action="signout">Sign out</button>`
+              ? `<a class="btn btn-ghost" href="#/home">Browse</a>
+                 <a class="btn btn-ghost" href="#/submit">Add a recipe</a>
+                 <button class="btn btn-ghost" data-action="signout">Sign out</button>
+                 ${headerAvatar()}`
               : `<a class="btn btn-ghost" href="#/auth">Sign in</a>
                  <a class="btn btn-primary" href="#/auth">Join free</a>`
           }

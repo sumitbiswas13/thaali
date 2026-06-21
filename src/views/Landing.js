@@ -6,6 +6,7 @@ import { isSignedIn } from '../lib/auth.js';
 export function Landing() {
   const stats = deriveStats();
   const featured = recipes.slice(0, 6);
+  const signedIn = isSignedIn();
 
   return `
     ${Header()}
@@ -20,8 +21,13 @@ export function Landing() {
             clean, searchable, and permanent.
           </p>
           <div class="hero-cta">
-            <a class="btn btn-primary" href="#/auth">Join free</a>
-            <a class="btn btn-ghost" href="#/auth">Browse recipes</a>
+            ${
+              signedIn
+                ? `<a class="btn btn-primary" href="#/home">Browse recipes</a>
+                   <a class="btn btn-ghost" href="#/submit">Add a recipe</a>`
+                : `<a class="btn btn-primary" href="#/auth">Join free</a>
+                   <a class="btn btn-ghost" href="#/auth">Browse recipes</a>`
+            }
           </div>
           <p class="promise">No ads · No paywall · No data-selling · Forever</p>
         </div>
