@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import { fetchRecipes } from './recipes.js';
+import { fetchProfilesByIds } from './profiles.js';
 
 // ── STATIC SEED DATA (Landing teaser — not the database) ──
 export const seedRecipes = [
@@ -72,6 +73,19 @@ export async function loadRecipes() {
     console.error('Failed to load recipes:', err);
     rows = [];
   }
+
+  // Resolve each recipe's CURRENT author name from profiles, so a display-name
+  // change shows everywhere instead of the snapshot stored at publish time.
+  try {
+    const profs = await fetchProfilesByIds(rows.map((r) => r.author_id));
+    for (const r of rows) {
+      const p = r.author_id ? profs.get(r.author_id) : null;
+      if (p?.display_name) r.author = p.display_name;
+    }
+  } catch (err) {
+    console.error('Failed to resolve author names:', err); // fall back to stored author
+  }
+
   recipes.length = 0;
   recipes.push(...rows);
 
@@ -86,6 +100,18 @@ export async function loadRecipes() {
     cooks.push({ id: 'cook-' + name, display_name: name, recipe_ids: ids });
   }
   return recipes;
+}
+
+// Resolve a recipe from a URL key that may be a slug, a short_code, or the
+// raw uuid (back-compat with old links). Checked in that order.
+export function findRecipe(key) {
+  if (!key) return null;
+  return (
+    recipes.find((r) => r.slug === key) ||
+    recipes.find((r) => r.short_code === key) ||
+    recipes.find((r) => r.id === key) ||
+    null
+  );
 }
 
 export const deriveCategories = () => [...new Set(recipes.map((r) => r.cuisine).filter(Boolean))];

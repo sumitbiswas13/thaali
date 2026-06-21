@@ -18,6 +18,18 @@ export async function fetchProfile(id) {
   return data;
 }
 
+// Batch lookup: { id → profile } for a set of user ids. Used to render each
+// recipe's CURRENT author name (so a rename updates everywhere, no stale snapshot).
+export async function fetchProfilesByIds(ids) {
+  const map = new Map();
+  const unique = [...new Set((ids || []).filter(Boolean))];
+  if (!isSupabaseReady() || unique.length === 0) return map;
+  const { data, error } = await supabase.from(TABLE).select('*').in('id', unique);
+  if (error) throw error;
+  for (const p of data || []) map.set(p.id, p);
+  return map;
+}
+
 // Ensure the signed-in user has a profile row (the DB trigger normally makes
 // it, but this is a safety net for older accounts).
 export async function ensureOwnProfile() {
