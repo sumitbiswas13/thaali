@@ -5,6 +5,7 @@ import { route, startRouter, navigate } from './lib/router.js';
 import { signOut, initAuth } from './lib/auth.js';
 import { loadRecipes } from './lib/mockData.js';
 import { prefillHeaderSearch } from './components/layout.js';
+import { loadOwnProfile, clearCachedProfile } from './lib/profileCache.js';
 import { Landing } from './views/Landing.js';
 import { Auth } from './views/Auth.js';
 import { Home } from './views/Home.js';
@@ -30,6 +31,7 @@ route('/profile', Profile);
 // Global sign-out handler (header button exists across views)
 document.addEventListener('click', (e) => {
   if (e.target.closest('[data-action="signout"]')) {
+    clearCachedProfile();
     signOut().then(() => navigate('/'));
   }
 });
@@ -51,6 +53,7 @@ window.addEventListener('hashchange', prefillHeaderSearch);
 (async () => {
   await initAuth();
   await loadRecipes();
+  await loadOwnProfile();
   startRouter();
   prefillHeaderSearch();
 })();

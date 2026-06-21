@@ -1,9 +1,11 @@
 import { isSignedIn, currentUser } from '../lib/auth.js';
+import { cachedAvatarUrl } from '../lib/profileCache.js';
 
 function headerAvatar() {
   const u = currentUser();
   if (!u) return '';
-  const url = u.user_metadata?.avatar_url || u.user_metadata?.picture || null;
+  // Prefer the cook's uploaded avatar; fall back to the Google photo, then an initial.
+  const url = cachedAvatarUrl() || u.user_metadata?.avatar_url || u.user_metadata?.picture || null;
   const name = u.user_metadata?.full_name || u.user_metadata?.name || u.email || '?';
   const initial = name.trim().charAt(0).toUpperCase();
   const inner = url

@@ -1,10 +1,11 @@
-import { Header, Footer } from '../components/layout.js';
+import { Header, Footer, prefillHeaderSearch } from '../components/layout.js';
 import { RecipeCard } from '../components/RecipeCard.js';
 import { recipes } from '../lib/mockData.js';
 import { onMount, navigate } from '../lib/router.js';
 import { isSignedIn, currentUser } from '../lib/auth.js';
 import { fetchProfile, ensureOwnProfile, updateProfile, uploadAvatar } from '../lib/profiles.js';
 import { COUNTRIES, countryName } from '../lib/categories.js';
+import { setCachedProfile } from '../lib/profileCache.js';
 
 // Route: #/profile           → own profile
 //        #/profile?id=<uid>  → another cook's profile
@@ -157,6 +158,13 @@ function renderEditForm(wrap, profile) {
     status.className = 'import-msg';
     try {
       const updated = await updateProfile({ display_name, bio, country, avatar_url: pendingAvatarUrl });
+      // Refresh the synchronous cache + header so the new avatar/name show now.
+      setCachedProfile(updated);
+      const headerEl = document.querySelector('.site-header');
+      if (headerEl) {
+        headerEl.outerHTML = Header();
+        prefillHeaderSearch();
+      }
       renderProfile(wrap, updated, true);
     } catch (err) {
       e.target.disabled = false;
