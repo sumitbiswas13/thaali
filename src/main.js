@@ -9,6 +9,7 @@ import { Auth } from './views/Auth.js';
 import { Home } from './views/Home.js';
 import { Submit } from './views/Submit.js';
 import { Recipe } from './views/Recipe.js';
+import { Profile } from './views/Profile.js';
 
 // Load fonts (Fraunces display, Inter body, IBM Plex Mono utility).
 const fonts = document.createElement('link');
@@ -23,6 +24,7 @@ route('/auth', Auth);
 route('/home', Home);
 route('/submit', Submit);
 route('/recipe', Recipe);
+route('/profile', Profile);
 
 // Global sign-out handler (header button exists across views)
 document.addEventListener('click', (e) => {

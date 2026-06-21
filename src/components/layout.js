@@ -16,6 +16,7 @@ export function Header() {
           ${
             signedIn
               ? `<a class="btn btn-ghost" href="#/submit">Add a recipe</a>
+                 <a class="btn btn-ghost" href="#/profile">Profile</a>
                  <button class="btn btn-ghost" data-action="signout">Sign out</button>`
               : `<a class="btn btn-ghost" href="#/auth">Sign in</a>
                  <a class="btn btn-primary" href="#/auth">Join free</a>`

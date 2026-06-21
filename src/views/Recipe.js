@@ -73,7 +73,11 @@ export function Recipe(params) {
         </div>
       </div>
 
-      <p class="byline" style="margin-top:32px;">Recipe by ${r.author}</p>
+      <p class="byline" style="margin-top:32px;">Recipe by ${
+        r.author_id
+          ? `<a class="byline-link" href="#/profile?id=${r.author_id}">${r.author}</a>`
+          : r.author
+      }</p>
       ${
         editable
           ? `<div style="margin-top:16px;"><button class="btn btn-ghost" data-action="delete-recipe">Delete recipe</button></div>`
