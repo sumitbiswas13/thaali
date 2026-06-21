@@ -542,3 +542,12 @@
 }
 .c-delete:hover { color: var(--paprika); }
 .c-text { margin: 4px 0 0; white-space: pre-wrap; word-break: break-word; }
+
+/* --- Card social counts (Browse) ----------------------------------------- */
+.card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.card-social { display: inline-flex; gap: 10px; align-items: center; }
+.card-stat {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--font-mono); font-size: .72rem; color: var(--ink-soft);
+}
+.card-likes { color: var(--paprika); }

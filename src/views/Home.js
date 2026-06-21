@@ -4,6 +4,12 @@ import { recipes } from '../lib/mockData.js';
 import { onMount, navigate as go } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
 import { CUISINES, COURSES, DIFFICULTIES, TIME_BUCKETS } from '../lib/categories.js';
+import { fetchLikeCounts, fetchCommentCounts } from '../lib/social.js';
+
+// Module-scoped count caches, filled once per Browse mount and reused across
+// filter re-renders so we never re-query on every chip click.
+let likeCounts = new Map();
+let commentCounts = new Map();
 
 // Total cooking time for a recipe, in minutes (or null if unknown).
 function totalMinutes(r) {
@@ -59,6 +65,27 @@ export function Home(params = {}) {
       return bucket ? bucket.match(totalMinutes(r)) : true;
     }
 
+    // Fill the like/comment badges on every visible card from the caches.
+    function paintCounts() {
+      grid.querySelectorAll('.card-social').forEach((el) => {
+        const id = el.dataset.recipeId;
+        const likes = likeCounts.get(id) || 0;
+        const comments = commentCounts.get(id) || 0;
+        // Only show the strip if there's any signal — keeps empty cards clean.
+        if (likes === 0 && comments === 0) {
+          el.hidden = true;
+          return;
+        }
+        el.hidden = false;
+        const likeEl = el.querySelector('.card-likes');
+        const commentEl = el.querySelector('.card-comments');
+        likeEl.querySelector('.n').textContent = likes;
+        likeEl.hidden = likes === 0;
+        commentEl.querySelector('.n').textContent = comments;
+        commentEl.hidden = comments === 0;
+      });
+    }
+
     function apply() {
       const filtered = recipes.filter(
         (r) =>
@@ -72,6 +99,7 @@ export function Home(params = {}) {
         ? filtered.map(RecipeCard).join('')
         : `<p class="muted">No recipes match these filters yet.</p>`;
       count.textContent = `${filtered.length} recipe${filtered.length === 1 ? '' : 's'}`;
+      paintCounts();
     }
 
     // One delegated wiring routine for every filter group.
@@ -95,6 +123,18 @@ export function Home(params = {}) {
 
     // If we arrived with a search term, filter right away.
     if (state.q) apply();
+
+    // Fetch like/comment counts once, then paint badges onto whatever's shown.
+    const ids = recipes.map((r) => r.id);
+    Promise.all([fetchLikeCounts(ids), fetchCommentCounts(ids)])
+      .then(([likes, comments]) => {
+        likeCounts = likes;
+        commentCounts = comments;
+        paintCounts();
+      })
+      .catch(() => {
+        /* counts are non-critical; leave badges hidden on failure */
+      });
   });
 
   const chipRow = (group, list) =>

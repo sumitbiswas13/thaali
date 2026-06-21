@@ -18,7 +18,13 @@ export function RecipeCard(r) {
           ${r.difficulty ? `<span>${r.difficulty}</span>` : ''}
           ${r.cuisine ? `<span>${r.cuisine}</span>` : ''}
         </div>
-        <div class="byline">by ${r.author}</div>
+        <div class="card-foot">
+          <span class="byline">by ${r.author}</span>
+          <span class="card-social" data-recipe-id="${r.id}" hidden>
+            <span class="card-stat card-likes">♥ <span class="n">0</span></span>
+            <span class="card-stat card-comments">💬 <span class="n">0</span></span>
+          </span>
+        </div>
       </div>
     </a>
   `;

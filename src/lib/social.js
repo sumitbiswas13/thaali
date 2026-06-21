@@ -6,6 +6,31 @@ import { currentUser } from './auth.js';
 // helpers are thin wrappers used by the recipe detail view.
 // ---------------------------------------------------------------------------
 
+// ---- Batched counts (for Browse cards — avoids a per-card query storm) ----
+
+// Returns Map<recipe_id, count> of likes across the given recipe ids.
+export async function fetchLikeCounts(recipeIds) {
+  const map = new Map();
+  const ids = [...new Set((recipeIds || []).filter(Boolean))];
+  if (!isSupabaseReady() || ids.length === 0) return map;
+  // One query, all rows; tally client-side. Fine at seed/early scale.
+  const { data, error } = await supabase.from('likes').select('recipe_id').in('recipe_id', ids);
+  if (error) throw error;
+  for (const row of data || []) map.set(row.recipe_id, (map.get(row.recipe_id) || 0) + 1);
+  return map;
+}
+
+// Returns Map<recipe_id, count> of comments across the given recipe ids.
+export async function fetchCommentCounts(recipeIds) {
+  const map = new Map();
+  const ids = [...new Set((recipeIds || []).filter(Boolean))];
+  if (!isSupabaseReady() || ids.length === 0) return map;
+  const { data, error } = await supabase.from('comments').select('recipe_id').in('recipe_id', ids);
+  if (error) throw error;
+  for (const row of data || []) map.set(row.recipe_id, (map.get(row.recipe_id) || 0) + 1);
+  return map;
+}
+
 // ---- Likes ----------------------------------------------------------------
 
 // Returns { count, liked } for a recipe (liked = does the current user like it).
