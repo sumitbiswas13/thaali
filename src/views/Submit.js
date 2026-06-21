@@ -2,7 +2,7 @@ import { Header, Footer } from '../components/layout.js';
 import { onMount, navigate } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
 import { loadRecipes } from '../lib/mockData.js';
-import { createRecipe } from '../lib/recipes.js';
+import { createRecipe, uploadRecipeImage } from '../lib/recipes.js';
 import { CUISINES, COURSES, DIFFICULTIES } from '../lib/categories.js';
 
 // Build <option> markup, marking the recipe's current value as selected.
@@ -51,7 +51,8 @@ export function Submit() {
             ? 'Imported what we could find — review and fill in the rest below.'
             : 'Found the page but no recipe data — start from the blank form below.';
           importMsg.className = 'import-msg ok';
-          renderForm(formWrap, data.recipe);
+          // Carry the original link through to publish for attribution.
+          renderForm(formWrap, { source_url: url, ...data.recipe });
         } else {
           // Graceful fallback: open a blank form so the cook can type it in.
           importMsg.textContent =
@@ -104,6 +105,19 @@ function renderForm(wrap, data) {
 
   wrap.innerHTML = `
     <div class="panel" style="max-width:none;margin-top:24px;">
+
+      <div class="field">
+        <label>Photo</label>
+        <div class="photo-field">
+          <div class="photo-preview" id="photo-preview">
+            ${data.image_url ? `<img src="${esc(data.image_url)}" alt="" />` : '<span class="muted">No photo yet</span>'}
+          </div>
+          <input type="file" id="f-image" accept="image/*" hidden />
+          <button type="button" class="btn btn-ghost" data-action="choose-photo">Add a photo</button>
+          <span class="import-msg" id="photo-status"></span>
+        </div>
+      </div>
+
       <div class="field">
         <label>Title ${tag('title')}</label>
         <input type="text" id="f-title" value="${esc(data.title)}" placeholder="Name your recipe" />
@@ -118,10 +132,11 @@ function renderForm(wrap, data) {
         <div class="field"><label>Course ${tag('course')}</label><select id="f-course">${options(COURSES, data.course)}</select></div>
         <div class="field"><label>Difficulty</label><select id="f-difficulty">${options(DIFFICULTIES, data.difficulty)}</select></div>
       </div>
-      <div class="field-row" style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div class="field-row" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
         <div class="field"><label>Prep (min)</label><input type="number" id="f-prep" value="${esc(data.prep_time)}" placeholder="10" /></div>
         <div class="field"><label>Cook (min)</label><input type="number" id="f-cook" value="${esc(data.cook_time)}" placeholder="25" /></div>
         <div class="field"><label>Serves</label><input type="number" id="f-servings" value="${esc(data.servings)}" placeholder="4" /></div>
+        <div class="field"><label>Total</label><div class="total-time" id="f-total">—</div></div>
       </div>
 
       <h3 style="margin:24px 0 12px;">Ingredients</h3>
@@ -145,7 +160,10 @@ function renderForm(wrap, data) {
     </div>
   `;
 
-  wireForm(wrap);
+  // State the form holds onto across edits: the uploaded photo URL and the
+  // original source link (set when imported).
+  const formState = { image_url: data.image_url || null, source_url: data.source_url || null };
+  wireForm(wrap, formState);
 }
 
 function ingRow(ing = {}) {
@@ -159,15 +177,57 @@ function ingRow(ing = {}) {
 }
 
 function stepRow(step = {}, i = 0) {
+  // timer_seconds is stored in seconds; show it to cooks as minutes.
+  const mins = step.timer_seconds ? Math.round(step.timer_seconds / 60) : '';
   return `
     <div class="step-row">
       <div class="step-num">${i + 1}</div>
-      <textarea rows="2" placeholder="Describe this step" data-f="instruction">${esc(step.instruction)}</textarea>
+      <div class="step-fields">
+        <textarea rows="2" placeholder="Describe this step" data-f="instruction">${esc(step.instruction)}</textarea>
+        <label class="step-timer">
+          <span class="muted">timer</span>
+          <input type="number" min="0" value="${mins}" placeholder="0" aria-label="timer minutes" data-f="timer" />
+          <span class="muted">min</span>
+        </label>
+      </div>
       <button class="row-remove" data-remove aria-label="remove">×</button>
     </div>`;
 }
 
-function wireForm(wrap) {
+function wireForm(wrap, formState) {
+  // --- live total-time readout ---
+  const updateTotal = () => {
+    const prep = Number(wrap.querySelector('#f-prep')?.value) || 0;
+    const cook = Number(wrap.querySelector('#f-cook')?.value) || 0;
+    const total = prep + cook;
+    const el = wrap.querySelector('#f-total');
+    if (el) el.textContent = total ? `${total} min` : '—';
+  };
+  wrap.querySelector('#f-prep')?.addEventListener('input', updateTotal);
+  wrap.querySelector('#f-cook')?.addEventListener('input', updateTotal);
+  updateTotal();
+
+  // --- photo upload ---
+  const fileInput = wrap.querySelector('#f-image');
+  const photoStatus = wrap.querySelector('#photo-status');
+  const preview = wrap.querySelector('#photo-preview');
+  wrap.querySelector('[data-action="choose-photo"]')?.addEventListener('click', () => fileInput.click());
+  fileInput?.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    photoStatus.textContent = 'Uploading photo…';
+    photoStatus.className = 'import-msg';
+    try {
+      formState.image_url = await uploadRecipeImage(file);
+      preview.innerHTML = `<img src="${formState.image_url}" alt="" />`;
+      photoStatus.textContent = 'Photo ready.';
+      photoStatus.className = 'import-msg ok';
+    } catch (err) {
+      photoStatus.textContent = err.message;
+      photoStatus.className = 'import-msg warn';
+    }
+  });
+
   wrap.querySelector('[data-add="ingredient"]')?.addEventListener('click', () => {
     document.getElementById('ingredients').insertAdjacentHTML('beforeend', ingRow({}));
     bindRemovers(wrap);
@@ -179,7 +239,7 @@ function wireForm(wrap) {
   });
   wrap.querySelector('[data-action="publish"]')?.addEventListener('click', async (e) => {
     const status = document.getElementById('submit-status');
-    const recipe = collect(wrap);
+    const recipe = collect(wrap, formState);
     if (!recipe.title) {
       status.textContent = 'Title is required.';
       return;
@@ -198,7 +258,7 @@ function wireForm(wrap) {
   bindRemovers(wrap);
 }
 
-function collect(wrap) {
+function collect(wrap, formState) {
   const val = (id) => wrap.querySelector('#' + id)?.value.trim() || '';
   const num = (id) => {
     const v = val(id);
@@ -214,7 +274,13 @@ function collect(wrap) {
     .filter((i) => i.item);
 
   const steps = [...wrap.querySelectorAll('.step-row')]
-    .map((row) => ({ instruction: row.querySelector('[data-f="instruction"]').value.trim() }))
+    .map((row) => {
+      const instruction = row.querySelector('[data-f="instruction"]').value.trim();
+      const mins = Number(row.querySelector('[data-f="timer"]').value);
+      const step = { instruction };
+      if (mins > 0) step.timer_seconds = Math.round(mins * 60);
+      return step;
+    })
     .filter((s) => s.instruction);
 
   return {
@@ -226,6 +292,8 @@ function collect(wrap) {
     prep_time: num('f-prep'),
     cook_time: num('f-cook'),
     servings: num('f-servings'),
+    image_url: formState.image_url,
+    source_url: formState.source_url,
     ingredients,
     steps,
   };

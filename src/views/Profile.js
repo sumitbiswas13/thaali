@@ -4,6 +4,7 @@ import { recipes } from '../lib/mockData.js';
 import { onMount, navigate } from '../lib/router.js';
 import { isSignedIn, currentUser } from '../lib/auth.js';
 import { fetchProfile, ensureOwnProfile, updateProfile, uploadAvatar } from '../lib/profiles.js';
+import { COUNTRIES, countryName } from '../lib/categories.js';
 
 // Route: #/profile           → own profile
 //        #/profile?id=<uid>  → another cook's profile
@@ -49,6 +50,7 @@ function renderProfile(wrap, profile, isOwner) {
       ${avatarMarkup(profile.avatar_url, name)}
       <div class="profile-meta">
         <h2 class="profile-name">${esc(name)}</h2>
+        ${profile.country ? `<p class="profile-country muted">📍 ${esc(countryName(profile.country))}</p>` : ''}
         <p class="profile-bio">${profile.bio ? esc(profile.bio) : '<span class="muted">No bio yet.</span>'}</p>
         ${isOwner ? `<button class="btn btn-ghost" data-action="edit-profile">Edit profile</button>` : ''}
       </div>
@@ -87,6 +89,15 @@ function renderEditForm(wrap, profile) {
         <div class="field">
           <label>Bio</label>
           <textarea id="p-bio" rows="3" placeholder="A line or two about you and how you cook">${esc(profile.bio || '')}</textarea>
+        </div>
+        <div class="field">
+          <label>Country</label>
+          <select id="p-country">
+            <option value="">—</option>
+            ${COUNTRIES.map(
+              (c) => `<option value="${c.code}" ${c.code === profile.country ? 'selected' : ''}>${esc(c.name)}</option>`
+            ).join('')}
+          </select>
         </div>
         <input type="file" id="p-avatar" accept="image/*" hidden />
         <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
@@ -135,6 +146,7 @@ function renderEditForm(wrap, profile) {
   wrap.querySelector('[data-action="save-profile"]')?.addEventListener('click', async (e) => {
     const display_name = wrap.querySelector('#p-name').value.trim();
     const bio = wrap.querySelector('#p-bio').value.trim();
+    const country = wrap.querySelector('#p-country').value;
     if (!display_name) {
       status.textContent = 'A display name is required.';
       status.className = 'import-msg warn';
@@ -144,7 +156,7 @@ function renderEditForm(wrap, profile) {
     status.textContent = 'Saving…';
     status.className = 'import-msg';
     try {
-      const updated = await updateProfile({ display_name, bio, avatar_url: pendingAvatarUrl });
+      const updated = await updateProfile({ display_name, bio, country, avatar_url: pendingAvatarUrl });
       renderProfile(wrap, updated, true);
     } catch (err) {
       e.target.disabled = false;

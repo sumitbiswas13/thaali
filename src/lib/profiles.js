@@ -3,7 +3,8 @@ import { currentUser } from './auth.js';
 
 // ---------------------------------------------------------------------------
 // Profiles data layer.
-//   profile = { id, display_name, bio, avatar_url, created_at, updated_at }
+//   profile = { id, display_name, bio, avatar_url, country, created_at, updated_at }
+//   country = ISO 3166-1 alpha-2 code (e.g. 'US', 'IN') or null
 // All reads require sign-in (RLS). A user can edit only their own row.
 // ---------------------------------------------------------------------------
 
@@ -51,6 +52,8 @@ export async function updateProfile(patch) {
     bio: patch.bio?.trim() || '',
   };
   if ('avatar_url' in patch) clean.avatar_url = patch.avatar_url;
+  // country is a code or null; empty string ('—' selection) saves as null.
+  if ('country' in patch) clean.country = patch.country || null;
 
   const { data, error } = await supabase
     .from(TABLE)

@@ -12,6 +12,23 @@ function headerAvatar() {
   return `<a class="nav-avatar" href="#/profile" title="Your profile">${inner}</a>`;
 }
 
+// Centered search box. Only shown when signed in (everything is members-only).
+// Submitting routes to #/home?q=<term>; Home.js reads q as a text filter.
+// Wired by wireHeaderSearch(), called once from main.js after each render.
+function headerSearch() {
+  if (!isSignedIn()) return '';
+  return `
+    <div class="header-search">
+      <input
+        type="search"
+        id="header-search-input"
+        placeholder="Search recipes…"
+        aria-label="Search recipes"
+        autocomplete="off"
+      />
+    </div>`;
+}
+
 export function Header() {
   const signedIn = isSignedIn();
   return `
@@ -24,6 +41,7 @@ export function Header() {
             <span class="brand-slogan">Cook. Share. Serve.</span>
           </span>
         </a>
+        ${headerSearch()}
         <nav class="nav-actions">
           ${
             signedIn
@@ -38,6 +56,17 @@ export function Header() {
       </div>
     </header>
   `;
+}
+
+// Attach the search behaviour via event delegation in main.js (a single
+// global listener), so it works across every view without per-render wiring.
+// On render, prefill the box from the current ?q= if present.
+export function prefillHeaderSearch() {
+  const input = document.getElementById('header-search-input');
+  if (!input) return;
+  const raw = location.hash.replace(/^#/, '');
+  const q = new URLSearchParams(raw.split('?')[1] || '').get('q');
+  input.value = q || '';
 }
 
 export function Footer() {
