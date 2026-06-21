@@ -203,8 +203,11 @@
 }
 
 /* ── Submission flow ──────────────────────────────── */
-.import-bar { display: flex; gap: 10px; margin-bottom: 24px; }
+.import-bar { display: flex; gap: 10px; margin-bottom: 12px; }
 .import-bar input { flex: 1; }
+.import-msg { margin: 0 0 16px; font-size: 0.9rem; min-height: 1.2em; }
+.import-msg.ok { color: #2f7d32; }
+.import-msg.warn { color: #9a6a00; }
 .ingredient-row, .step-row { display: grid; gap: 10px; margin-bottom: 10px; }
 .ingredient-row { grid-template-columns: 80px 90px 1fr auto; }
 .step-row { grid-template-columns: 36px 1fr auto; align-items: start; }

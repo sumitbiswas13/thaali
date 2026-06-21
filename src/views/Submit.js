@@ -1,7 +1,7 @@
 import { Header, Footer } from '../components/layout.js';
 import { onMount, navigate } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
-import { demoImport, loadRecipes } from '../lib/mockData.js';
+import { loadRecipes } from '../lib/mockData.js';
 import { createRecipe } from '../lib/recipes.js';
 
 export function Submit() {
@@ -12,16 +12,58 @@ export function Submit() {
 
   onMount(() => {
     const importBtn = document.querySelector('[data-action="import"]');
+    const urlInput = document.getElementById('import-url');
+    const importMsg = document.getElementById('import-msg');
     const formWrap = document.getElementById('submit-form');
 
-    importBtn?.addEventListener('click', () => {
-      // Prototype: URL import is simulated and always returns the demo recipe.
-      // Real version: server-side fetch parses schema.org Recipe JSON-LD, with
-      // an AI fallback for messy pages (Cloudflare Pages Function).
-      renderForm(formWrap, demoImport);
+    async function runImport() {
+      const url = urlInput.value.trim();
+      if (!url) {
+        urlInput.focus();
+        return;
+      }
+      importBtn.disabled = true;
+      const original = importBtn.textContent;
+      importBtn.textContent = 'Reading…';
+      importMsg.textContent = '';
+      importMsg.className = 'import-msg';
+
+      try {
+        const resp = await fetch('/api/import?url=' + encodeURIComponent(url));
+        const data = await resp.json();
+
+        if (data.ok && data.recipe) {
+          const count = data.recipe.imported_fields?.length || 0;
+          importMsg.textContent = count
+            ? 'Imported what we could find — review and fill in the rest below.'
+            : 'Found the page but no recipe data — start from the blank form below.';
+          importMsg.className = 'import-msg ok';
+          renderForm(formWrap, data.recipe);
+        } else {
+          // Graceful fallback: open a blank form so the cook can type it in.
+          importMsg.textContent =
+            (data.error || 'Could not import that page.') + ' You can still add it by hand below.';
+          importMsg.className = 'import-msg warn';
+          renderForm(formWrap, { ingredients: [], steps: [], imported_fields: [] });
+        }
+      } catch (err) {
+        importMsg.textContent = 'Import service unreachable. Add the recipe by hand below.';
+        importMsg.className = 'import-msg warn';
+        renderForm(formWrap, { ingredients: [], steps: [], imported_fields: [] });
+      } finally {
+        importBtn.disabled = false;
+        importBtn.textContent = original;
+      }
+    }
+
+    importBtn?.addEventListener('click', runImport);
+    urlInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') runImport();
     });
 
     document.querySelector('[data-action="scratch"]')?.addEventListener('click', () => {
+      importMsg.textContent = '';
+      importMsg.className = 'import-msg';
       renderForm(formWrap, { ingredients: [], steps: [], imported_fields: [] });
     });
   });
@@ -35,6 +77,7 @@ export function Submit() {
         <input type="url" id="import-url" placeholder="Paste a recipe link — yours or anywhere" />
         <button class="btn btn-primary" data-action="import">Read the page</button>
       </div>
+      <p class="import-msg" id="import-msg"></p>
       <button class="add-row" data-action="scratch">or start from scratch →</button>
 
       <div id="submit-form"></div>

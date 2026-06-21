@@ -89,20 +89,3 @@ export async function loadRecipes() {
 }
 
 export const deriveCategories = () => [...new Set(recipes.map((r) => r.cuisine).filter(Boolean))];
-
-export const demoImport = {
-  title: 'Imported: Classic Margherita Pizza',
-  source_url: 'https://example.com/margherita',
-  cuisine: 'Italian',
-  course: 'Main',
-  imported_fields: ['title', 'cuisine', 'course', 'ingredients'],
-  ingredients: [
-    { quantity: '250', unit: 'g', item: '00 flour', imported: true },
-    { quantity: '1', unit: 'tsp', item: 'salt', imported: true },
-    { quantity: '1', unit: 'ball', item: 'fresh mozzarella', imported: true },
-  ],
-  steps: [
-    { instruction: 'Stretch the dough by hand into a thin round.', imported: false },
-    { instruction: 'Top with sauce and torn mozzarella.', imported: false },
-  ],
-};
