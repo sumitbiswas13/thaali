@@ -960,3 +960,16 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 
 /* Submit publish-gate nudge: warn state for the inline status line. */
 .auth-status.warn { color: #9a6a00; }
+
+/* ===========================================================================
+   Legal pages (#/privacy, #/terms)  (2026-06-23)
+   Readable prose column; public, no login needed.
+   =========================================================================== */
+.legal-page { max-width: 760px; margin: clamp(32px, 6vw, 64px) auto; padding-bottom: 64px; }
+.legal-page h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin-bottom: 6px; }
+.legal-page h2 { font-size: 1.3rem; margin: 32px 0 10px; }
+.legal-page p { margin: 12px 0; color: var(--ink); }
+.legal-page a { color: var(--paprika); text-decoration: underline; }
+.legal-page a:hover { color: var(--brick-deep); }
+.legal-list { margin: 12px 0 12px 22px; }
+.legal-list li { margin: 8px 0; }

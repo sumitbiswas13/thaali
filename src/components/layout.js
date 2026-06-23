@@ -90,6 +90,8 @@ export function Footer() {
         <span>Thaali — by cooks, for everyone. No ads, no paywall, ever.</span>
         <span class="footer-links">
           <a href="#/contact">Contact &amp; support</a>
+          <a href="#/privacy">Privacy</a>
+          <a href="#/terms">Terms</a>
           <span>© ${new Date().getFullYear()} · thaali.app</span>
         </span>
       </div>
