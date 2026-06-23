@@ -48,6 +48,7 @@ export function Header() {
           ${
             signedIn
               ? `<a class="btn btn-ghost" href="#/home">Browse</a>
+                 <a class="btn btn-ghost" href="#/news">News</a>
                  <a class="btn btn-ghost" href="#/submit">Add a recipe</a>
                  <button class="btn btn-ghost" data-action="signout">Sign out</button>
                  ${headerAvatar()}`
@@ -76,7 +77,10 @@ export function Footer() {
     <footer class="site-footer">
       <div class="wrap">
         <span>Thaali — by cooks, for everyone. No ads, no paywall, ever.</span>
-        <span>© ${new Date().getFullYear()} · thaali.app</span>
+        <span class="footer-links">
+          <a href="#/contact">Contact &amp; support</a>
+          <span>© ${new Date().getFullYear()} · thaali.app</span>
+        </span>
       </div>
     </footer>
   `;

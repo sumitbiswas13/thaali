@@ -607,3 +607,59 @@
   font-size: 1.6rem; line-height: 1; cursor: pointer;
 }
 .lightbox-close:hover { background: rgba(255,255,255,.3); }
+
+/* --- News feed ------------------------------------------------------------ */
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 22px;
+  margin-bottom: 28px;
+}
+.news-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.news-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,26,.12); }
+.news-media { aspect-ratio: 16 / 9; overflow: hidden; background: var(--paper); }
+.news-media img { width: 100%; height: 100%; object-fit: cover; }
+.news-media-empty {
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--turmeric), var(--saffron));
+  font-size: 2rem;
+}
+.news-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; }
+.news-section {
+  font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--cumin);
+}
+.news-title { font-size: 1.15rem; line-height: 1.25; }
+.news-summary {
+  font-size: .92rem; color: var(--ink-soft); line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.news-byline { font-family: var(--font-mono); font-size: .76rem; color: var(--ink-soft); margin-top: 2px; }
+.news-credit { font-size: .82rem; margin: 8px 0 60px; }
+.news-credit a { color: var(--saffron); font-weight: 600; }
+.news-credit a:hover { color: var(--paprika); }
+
+/* --- Footer links --------------------------------------------------------- */
+.footer-links { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+.footer-links a { color: var(--saffron); font-weight: 600; }
+.footer-links a:hover { color: var(--paprika); }
+
+/* --- Contact form char counter ------------------------------------------- */
+.char-count { float: right; font-weight: 400; font-size: .78rem; }
+.field input[readonly], .field input:disabled {
+  background: var(--paper); color: var(--ink-soft); cursor: not-allowed;
+}
+.panel textarea {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--line-strong);
+  border-radius: 10px; font-family: var(--font-body); font-size: 1rem;
+  background: #fff; color: var(--ink); resize: vertical;
+}
+.panel textarea:focus { outline: none; border-color: var(--saffron); }
