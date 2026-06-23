@@ -12,6 +12,24 @@ function esc(v) {
     .replace(/>/g, '&gt;');
 }
 
+// Remove any HTML tags and decode common entities. The Guardian's trailText
+// can arrive with <p>…</p> wrappers; we want clean plain text, then esc() it.
+function stripHtml(v) {
+  if (v === undefined || v === null) return '';
+  return String(v)
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&hellip;/g, '…')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function timeAgo(iso) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -24,18 +42,23 @@ function timeAgo(iso) {
 }
 
 function newsCard(item) {
+  const title = stripHtml(item.title);
+  const summary = stripHtml(item.summary);
   const media = item.image
     ? `<div class="news-media"><img src="${esc(item.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>`
-    : `<div class="news-media news-media-empty"><span>📰</span></div>`;
-  const byline = [item.author, timeAgo(item.published)].filter(Boolean).join(' · ');
+    : `<div class="news-media news-media-empty"><span>🍴</span></div>`;
+  const byline = [stripHtml(item.author), timeAgo(item.published)].filter(Boolean).join(' · ');
   return `
     <a class="news-card" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">
       ${media}
       <div class="news-body">
-        <span class="news-section">${esc(item.section || 'Food')}</span>
-        <h3 class="news-title">${esc(item.title)}</h3>
-        ${item.summary ? `<p class="news-summary">${esc(item.summary)}</p>` : ''}
-        ${byline ? `<span class="news-byline">${esc(byline)}</span>` : ''}
+        <span class="news-section">${esc(stripHtml(item.section) || 'Food')}</span>
+        <h3 class="news-title">${esc(title)}</h3>
+        ${summary ? `<p class="news-summary">${esc(summary)}</p>` : ''}
+        <div class="news-foot">
+          ${byline ? `<span class="news-byline">${esc(byline)}</span>` : '<span></span>'}
+          <span class="news-readmore">Read on The Guardian ↗</span>
+        </div>
       </div>
     </a>`;
 }

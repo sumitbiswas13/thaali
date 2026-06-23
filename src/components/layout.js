@@ -11,7 +11,17 @@ function headerAvatar() {
   const inner = url
     ? `<img src="${url}" alt="" class="nav-avatar-img" referrerpolicy="no-referrer" />`
     : `<span class="nav-avatar-fallback">${initial}</span>`;
-  return `<a class="nav-avatar" href="#/profile" title="Your profile">${inner}</a>`;
+  // Avatar is now a dropdown trigger; menu holds Profile + Sign out.
+  return `
+    <div class="nav-avatar-menu">
+      <button class="nav-avatar" data-action="avatar-toggle" aria-haspopup="true" aria-expanded="false" title="Account">
+        ${inner}
+      </button>
+      <div class="nav-dropdown" data-avatar-dropdown hidden>
+        <a class="nav-dropdown-item" href="#/profile">Your profile</a>
+        <button class="nav-dropdown-item" data-action="signout">Sign out</button>
+      </div>
+    </div>`;
 }
 
 // Centered search box. Only shown when signed in (everything is members-only).
@@ -50,7 +60,6 @@ export function Header() {
               ? `<a class="btn btn-ghost" href="#/home">Browse</a>
                  <a class="btn btn-ghost" href="#/news">News</a>
                  <a class="btn btn-ghost" href="#/submit">Add a recipe</a>
-                 <button class="btn btn-ghost" data-action="signout">Sign out</button>
                  ${headerAvatar()}`
               : `<a class="btn btn-ghost" href="#/auth">Sign in</a>
                  <a class="btn btn-primary" href="#/auth">Join free</a>`

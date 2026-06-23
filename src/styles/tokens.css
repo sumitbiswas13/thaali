@@ -67,6 +67,7 @@ img { max-width: 100%; display: block; }
   padding: 12px 22px;
   border-radius: var(--radius-pill);
   font-weight: 600;
+  white-space: nowrap;
   transition: transform 0.12s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 .btn-primary {

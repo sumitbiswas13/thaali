@@ -72,6 +72,7 @@ async function fromGuardianApi(apiKey) {
     '&order-by=newest' +
     `&page-size=${MAX_ITEMS}` +
     '&show-fields=trailText,thumbnail,byline,headline' +
+    '&show-elements=image' +
     '&api-key=' +
     encodeURIComponent(apiKey);
 
@@ -87,12 +88,28 @@ async function fromGuardianApi(apiKey) {
     title: stripTags(r.fields?.headline || r.webTitle || ''),
     summary: stripTags(r.fields?.trailText || ''),
     url: r.webUrl || '',
-    image: r.fields?.thumbnail || null,
+    image: pickImage(r),
     author: stripTags(r.fields?.byline || ''),
     published: r.webPublicationDate || null,
     section: r.sectionName || 'Food',
   }));
   return { ok: true, source: 'guardian', items };
+}
+
+// Prefer a larger main-element image; fall back to the small thumbnail.
+function pickImage(r) {
+  const els = r.elements || [];
+  const main = els.find((e) => e.relation === 'main' && e.type === 'image');
+  if (main && Array.isArray(main.assets) && main.assets.length) {
+    // Pick a mid-size asset (around 500–1000px wide) for crisp cards.
+    const sorted = main.assets
+      .map((a) => ({ url: a.file, w: parseInt(a.typeData?.width || '0', 10) }))
+      .filter((a) => a.url)
+      .sort((a, b) => a.w - b.w);
+    const mid = sorted.find((a) => a.w >= 500) || sorted[sorted.length - 1];
+    if (mid) return mid.url;
+  }
+  return r.fields?.thumbnail || null;
 }
 
 // --- Guardian Food & Drink RSS (no key) ------------------------------------

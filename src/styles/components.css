@@ -666,3 +666,34 @@
 
 /* --- Turnstile widget (contact form) ------------------------------------- */
 .cf-turnstile-wrap { display: flex; justify-content: center; margin: 4px 0 18px; min-height: 65px; }
+
+/* --- Avatar dropdown menu (header) --------------------------------------- */
+.nav-avatar-menu { position: relative; }
+.nav-avatar { padding: 0; border: none; background: none; cursor: pointer; }
+.nav-dropdown {
+  position: absolute; right: 0; top: calc(100% + 10px);
+  background: var(--paper-raised); border: 1px solid var(--line);
+  border-radius: 12px; box-shadow: 0 10px 30px rgba(32,25,26,.16);
+  min-width: 168px; padding: 6px; z-index: 60;
+  display: flex; flex-direction: column;
+}
+.nav-dropdown[hidden] { display: none; }
+.nav-dropdown-item {
+  display: block; width: 100%; text-align: left;
+  padding: 10px 14px; border-radius: 8px; font-size: .95rem;
+  color: var(--ink); background: none; border: none; cursor: pointer;
+  font-family: var(--font-body);
+}
+.nav-dropdown-item:hover { background: var(--paper); color: var(--paprika); }
+
+/* --- News card footer (byline + read-more) ------------------------------- */
+.news-foot {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; margin-top: 4px;
+}
+.news-readmore {
+  font-family: var(--font-mono); font-size: .72rem; color: var(--saffron);
+  white-space: nowrap; font-weight: 500;
+}
+.news-card:hover .news-readmore { color: var(--paprika); }
+.news-media-empty span { font-size: 2.2rem; opacity: .55; }

@@ -53,6 +53,22 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Avatar dropdown: toggle on click, close on outside click or navigation.
+document.addEventListener('click', (e) => {
+  const toggle = e.target.closest('[data-action="avatar-toggle"]');
+  const dropdown = document.querySelector('[data-avatar-dropdown]');
+  if (!dropdown) return;
+  if (toggle) {
+    const open = dropdown.hidden;
+    dropdown.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+  } else if (!e.target.closest('[data-avatar-dropdown]')) {
+    // Clicked anywhere else (including a menu link) — close it.
+    dropdown.hidden = true;
+    document.querySelector('[data-action="avatar-toggle"]')?.setAttribute('aria-expanded', 'false');
+  }
+});
+
 // Global header-search handler — one delegated listener for the whole app.
 // Enter in the header search box routes to Browse with ?q=<term>.
 document.addEventListener('keydown', (e) => {
