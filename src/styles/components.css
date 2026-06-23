@@ -663,3 +663,6 @@
   background: #fff; color: var(--ink); resize: vertical;
 }
 .panel textarea:focus { outline: none; border-color: var(--saffron); }
+
+/* --- Turnstile widget (contact form) ------------------------------------- */
+.cf-turnstile-wrap { display: flex; justify-content: center; margin: 4px 0 18px; min-height: 65px; }

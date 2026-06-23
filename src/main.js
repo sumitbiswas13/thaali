@@ -14,6 +14,7 @@ import { Recipe } from './views/Recipe.js';
 import { Profile } from './views/Profile.js';
 import { News } from './views/News.js';
 import { Contact } from './views/Contact.js';
+import { TURNSTILE_SITE_KEY } from './lib/config.js';
 
 // Load fonts (Fraunces display, Inter body, IBM Plex Mono utility).
 const fonts = document.createElement('link');
@@ -21,6 +22,18 @@ fonts.rel = 'stylesheet';
 fonts.href =
   'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap';
 document.head.appendChild(fonts);
+
+// Load the Cloudflare Turnstile script once (explicit render mode — the
+// contact form mounts after navigation, so we render the widget ourselves).
+// Only loaded when a site key is configured. The exact api.js URL must be used
+// (Cloudflare requires it not be proxied/cached).
+if (TURNSTILE_SITE_KEY) {
+  const ts = document.createElement('script');
+  ts.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  ts.async = true;
+  ts.defer = true;
+  document.head.appendChild(ts);
+}
 
 // Routes
 route('/', Landing);

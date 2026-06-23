@@ -34,6 +34,7 @@ export async function onRequestPost({ request, env }) {
   const email = String(body.email || '').trim();
   const subject = String(body.subject || '').trim();
   const message = String(body.message || '').trim();
+  const turnstileToken = String(body.turnstileToken || '').trim();
 
   // --- Validate -----------------------------------------------------------
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
@@ -48,6 +49,20 @@ export async function onRequestPost({ request, env }) {
   // Header-injection guard: no newlines in the subject.
   if (/[\r\n]/.test(subject))
     return json({ ok: false, error: 'Subject contains invalid characters.' }, 400);
+
+  // --- Bot check: verify the Turnstile token (mandatory when configured) --
+  // This is the real gate. The browser widget alone proves nothing — a bot can
+  // POST straight here and skip it, so we only trust a token Cloudflare confirms.
+  if (env && env.TURNSTILE_SECRET_KEY) {
+    if (!turnstileToken) {
+      return json({ ok: false, error: 'Please complete the verification.' }, 400);
+    }
+    const ip = request.headers.get('CF-Connecting-IP') || '';
+    const ok = await verifyTurnstile(env.TURNSTILE_SECRET_KEY, turnstileToken, ip);
+    if (!ok) {
+      return json({ ok: false, error: 'Verification failed. Please try again.' }, 400);
+    }
+  }
 
   const cleanSubject = `[Thaali contact] ${subject}`;
   const textBody =
@@ -73,6 +88,25 @@ export async function onRequestPost({ request, env }) {
   }
 
   return json({ ok: true });
+}
+
+// Verify a Turnstile token against Cloudflare's Siteverify endpoint.
+// Returns true only if the token is authentic, unexpired, and unused.
+async function verifyTurnstile(secret, token, ip) {
+  const form = new URLSearchParams();
+  form.append('secret', secret);
+  form.append('response', token);
+  if (ip) form.append('remoteip', ip);
+  try {
+    const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: form,
+    });
+    const data = await resp.json();
+    return Boolean(data.success);
+  } catch {
+    return false;
+  }
 }
 
 // Resend — https://resend.com (free tier 3k/mo). Set RESEND_API_KEY in

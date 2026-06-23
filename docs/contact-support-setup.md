@@ -101,12 +101,49 @@ nowhere near the free 500/day floor.
 
 ---
 
-## Quick reference — new env vars
+---
+
+## C. Contact form CAPTCHA (Cloudflare Turnstile)
+
+The contact form can show a Cloudflare Turnstile widget below the message box.
+The **Send** button stays disabled until the visitor passes the check (the
+green tick), and the server Function verifies the token before sending — so a
+bot can't skip the widget by POSTing directly.
+
+Turnstile is free with no usage cap, privacy-friendly (no Google tracking),
+and usually shows a green tick with no interaction. It works whether or not
+your traffic is proxied through Cloudflare.
+
+**It's optional.** With no keys set, the form renders without the widget and
+still sends (once Resend is configured). Turn it on like this:
+
+1. Cloudflare Dashboard → **Turnstile** → **Add widget**.
+   - Name: `Thaali contact`
+   - Hostnames: `thaali.app` (add `localhost` too if you ever test locally)
+   - Widget mode: **Managed** (recommended — invisible for most, a tick when needed)
+2. Cloudflare shows a **Site Key** (public) and a **Secret Key** (private).
+3. Add both to **thaali → Settings → Variables and Secrets → Environment
+   variables** (Production):
+   - `VITE_TURNSTILE_SITE_KEY` = the **site** key.
+     This is a *build-time* var (Vite inlines it into the browser bundle), so
+     it can be a plain variable — it's public by design.
+   - `TURNSTILE_SECRET_KEY` = the **secret** key. **Encrypt** this one.
+4. Redeploy (push or **Retry deployment**) so the build picks up the site key
+   and the Function picks up the secret.
+
+> Both keys must be present for the gate to work end-to-end: the site key makes
+> the widget appear, the secret key makes the server enforce it. If you set only
+> the secret, the widget won't render but the Function will reject every
+> submission (no token) — so set them together.
+
+
 
 | Variable | Where | Required? | Purpose |
 |---|---|---|---|
 | `RESEND_API_KEY` | Cloudflare Pages env (secret) | Yes, for contact form | Sends contact emails |
 | `GUARDIAN_API_KEY` | Cloudflare Pages env (secret) | Optional | Richer news cards (RSS fallback otherwise) |
+| `VITE_TURNSTILE_SITE_KEY` | Cloudflare Pages env (build var) | Optional | CAPTCHA on contact form (public site key) |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Pages env (secret) | Optional | Server-side CAPTCHA verification |
 
 ## New routes & files
 
