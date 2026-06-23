@@ -43,8 +43,8 @@ export function Landing() {
           <h1>A free home for the recipes <span class="accent">you cook</span>.</h1>
           <p class="lede">
             Thaali is a community cookbook built by cooks, for everyone.
-            Paste a link, structure it once, and your recipe lives here —
-            clean, searchable, and permanent.
+            Write a recipe in your own words, or paste a link to one you love —
+            structure it once, and it lives here: clean, searchable, and yours forever.
           </p>
           <div class="hero-cta">
             ${

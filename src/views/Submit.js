@@ -362,16 +362,6 @@ function wireForm(wrap, formState) {
       // provide, OR they changed the imported one (any edit counts).
       const hasOwnDescription = currentDesc.length > 0 && currentDesc !== importedDesc;
       const hasOwnPhoto = formState.gallery.length > 0;
-      console.log('[THAALI NUDGE DEBUG]', {
-        wasImported,
-        imported_fields: formState.imported_fields,
-        currentDesc: JSON.stringify(currentDesc),
-        importedDesc: JSON.stringify(importedDesc),
-        descsEqual: currentDesc === importedDesc,
-        hasOwnDescription,
-        hasOwnPhoto,
-        galleryLength: formState.gallery.length,
-      });
       if (!hasOwnDescription && !hasOwnPhoto) {
         status.textContent =
           'Almost there — add your own touch first: write or edit the description, or add a photo of your version.';
