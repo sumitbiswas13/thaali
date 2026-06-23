@@ -778,3 +778,45 @@
 .deletion-pending p { margin: 0 0 10px; }
 .deletion-pending p:last-of-type { margin-bottom: 14px; }
 .deletion-pending a { color: #a8431f; text-decoration: underline; }
+
+/* ===========================================================================
+   Add-a-recipe photo empty state — a clickable dashed drop zone that doubles
+   as the add affordance, replacing the bare "No photos yet" text. Warm tokens
+   so it reads as intentional, not a stub.
+   =========================================================================== */
+.photo-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 360px;
+  min-height: 132px;
+  padding: 20px;
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+.photo-dropzone:hover {
+  border-color: var(--saffron);
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+.photo-dropzone-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--saffron);
+}
+.photo-dropzone-text {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.photo-dropzone-hint {
+  font-size: 0.8rem;
+}

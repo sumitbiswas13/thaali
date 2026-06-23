@@ -248,7 +248,15 @@ function wireForm(wrap, formState) {
 
   function paintGallery() {
     if (!formState.gallery.length) {
-      galleryEl.innerHTML = '<span class="muted">No photos yet</span>';
+      // Graceful empty state: a single dashed drop zone that IS the add
+      // affordance (clicking it opens the file picker), instead of stray
+      // "No photos yet" text sitting above a separate button.
+      galleryEl.innerHTML = `
+        <button type="button" class="photo-dropzone" data-action="dropzone">
+          <span class="photo-dropzone-icon" aria-hidden="true">+</span>
+          <span class="photo-dropzone-text">Add a photo</span>
+          <span class="photo-dropzone-hint muted">Up to ${MAX_IMAGES} · tap one later to set the cover</span>
+        </button>`;
     } else {
       galleryEl.innerHTML = formState.gallery
         .map((url, idx) => {
@@ -262,12 +270,16 @@ function wireForm(wrap, formState) {
         })
         .join('');
     }
-    // Hide the add button once we hit the cap.
-    chooseBtn.style.display = formState.gallery.length >= MAX_IMAGES ? 'none' : '';
+    // The separate "Add a photo" button only makes sense once photos exist
+    // (the empty state has its own drop zone). Hide it when empty or at cap.
+    const atCap = formState.gallery.length >= MAX_IMAGES;
+    chooseBtn.style.display = formState.gallery.length === 0 || atCap ? 'none' : '';
     bindGallery();
   }
 
   function bindGallery() {
+    // Empty-state drop zone opens the same file picker as the Add button.
+    galleryEl.querySelector('[data-action="dropzone"]')?.addEventListener('click', () => fileInput.click());
     galleryEl.querySelectorAll('[data-make]').forEach((btn) => {
       btn.onclick = () => {
         formState.titleImg = formState.gallery[Number(btn.dataset.make)];
