@@ -957,3 +957,6 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 }
 .c-report:hover { color: var(--brick-deep); }
 .c-report:disabled { opacity: 0.6; cursor: default; }
+
+/* Submit publish-gate nudge: warn state for the inline status line. */
+.auth-status.warn { color: #9a6a00; }

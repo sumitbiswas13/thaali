@@ -157,6 +157,11 @@ function renderForm(wrap, data, existing = null) {
       <div class="field">
         <label>Description</label>
         <textarea id="f-desc" rows="2" placeholder="A line about this dish">${esc(data.description)}</textarea>
+        ${
+          data.source_url && (data.imported_fields || []).length
+            ? `<p class="import-help muted" style="margin-top:6px;">This one was imported — add your own touch to publish: a short description here, or a photo of your version above.</p>`
+            : ''
+        }
       </div>
 
       <div class="field-row" style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -196,6 +201,7 @@ function renderForm(wrap, data, existing = null) {
     gallery,
     titleImg,
     source_url: data.source_url || null,
+    imported_fields: Array.isArray(data.imported_fields) ? data.imported_fields : [],
     editingId: existing ? existing.id : null,
   };
   wireForm(wrap, formState);
@@ -343,7 +349,26 @@ function wireForm(wrap, formState) {
       status.textContent = 'Title is required.';
       return;
     }
+
+    // "Make it your own" nudge: a NEW recipe brought in via import must carry at
+    // least one original touch from the cook — a description they wrote, or a
+    // photo of their own. Hand-entered recipes (no import) and edits are exempt.
+    const wasImported = !formState.editingId && formState.source_url && formState.imported_fields.length > 0;
+    if (wasImported) {
+      const hasOwnDescription = recipe.description.trim().length > 0 && !formState.imported_fields.includes('description');
+      const hasOwnPhoto = formState.gallery.length > 0;
+      if (!hasOwnDescription && !hasOwnPhoto) {
+        status.textContent =
+          'Almost there — add your own touch first: write a short description, or add a photo of your version.';
+        status.className = 'auth-status warn';
+        // Nudge focus to the description so the next step is obvious.
+        wrap.querySelector('#f-desc')?.focus();
+        return;
+      }
+    }
+
     e.target.disabled = true;
+    status.className = 'auth-status';
     status.textContent = formState.editingId ? 'Saving…' : 'Publishing…';
     try {
       if (formState.editingId) {
