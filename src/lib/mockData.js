@@ -51,7 +51,7 @@ export const seedRecipes = [
 ];
 
 export const seedCooks = [
-  { id: 'c1', display_name: 'Sumi', bio: 'Home cook, building Thaali.', recipe_ids: seedRecipes.map((r) => r.id) },
+  { id: 'c1', author_id: null, display_name: 'Sumi', bio: 'Home cook, building Thaali.', avatar_url: null, recipe_ids: seedRecipes.map((r) => r.id) },
 ];
 
 // ── Landing stat helpers (run off the stable seed showcase) ──
@@ -76,8 +76,10 @@ export async function loadRecipes() {
 
   // Resolve each recipe's CURRENT author name from profiles, so a display-name
   // change shows everywhere instead of the snapshot stored at publish time.
+  // profs is also reused below to give each cook an avatar + profile link.
+  let profs = new Map();
   try {
-    const profs = await fetchProfilesByIds(rows.map((r) => r.author_id));
+    profs = await fetchProfilesByIds(rows.map((r) => r.author_id));
     for (const r of rows) {
       const p = r.author_id ? profs.get(r.author_id) : null;
       if (p?.display_name) r.author = p.display_name;
@@ -89,15 +91,26 @@ export async function loadRecipes() {
   recipes.length = 0;
   recipes.push(...rows);
 
-  const byAuthor = new Map();
+  // Group cooks by author_id (stable across renames; avoids merging two cooks
+  // who share a display name). Recipes with no author_id fall back to name.
+  const byCook = new Map();
   for (const r of recipes) {
-    const name = r.author || 'anonymous';
-    if (!byAuthor.has(name)) byAuthor.set(name, []);
-    byAuthor.get(name).push(r.id);
+    const k = r.author_id || ('name:' + (r.author || 'anonymous'));
+    if (!byCook.has(k)) byCook.set(k, []);
+    byCook.get(k).push(r.id);
   }
   cooks.length = 0;
-  for (const [name, ids] of byAuthor) {
-    cooks.push({ id: 'cook-' + name, display_name: name, recipe_ids: ids });
+  for (const [k, ids] of byCook) {
+    const authorId = k.startsWith('name:') ? null : k;
+    const p = authorId ? profs.get(authorId) : null;
+    const name = p?.display_name || recipes.find((r) => (r.author_id || ('name:' + (r.author || 'anonymous'))) === k)?.author || 'A Thaali cook';
+    cooks.push({
+      id: 'cook-' + k,
+      author_id: authorId,
+      display_name: name,
+      avatar_url: p?.avatar_url || null,
+      recipe_ids: ids,
+    });
   }
   return recipes;
 }

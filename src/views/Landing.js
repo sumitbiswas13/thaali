@@ -78,14 +78,19 @@ export function Landing() {
         <div class="section-head"><h2>The cooks</h2></div>
         <div class="cooks">
           ${cooks
-            .map(
-              (c) => `
-            <div class="cook">
-              <div class="avatar"></div>
-              <div class="name">${c.display_name}</div>
-              <div class="count">${c.recipe_ids.length} recipe${c.recipe_ids.length === 1 ? '' : 's'}</div>
-            </div>`
-            )
+            .map((c) => {
+              const avatar = c.avatar_url
+                ? `<div class="avatar"><img src="${c.avatar_url}" alt="" referrerpolicy="no-referrer" /></div>`
+                : `<div class="avatar"></div>`;
+              const inner = `
+                ${avatar}
+                <div class="name">${c.display_name}</div>
+                <div class="count">${c.recipe_ids.length} recipe${c.recipe_ids.length === 1 ? '' : 's'}</div>`;
+              // Link to the cook's profile only when we have a real author id.
+              return c.author_id
+                ? `<a class="cook" href="#/profile?id=${c.author_id}">${inner}</a>`
+                : `<div class="cook">${inner}</div>`;
+            })
             .join('')}
         </div>
       </section>
