@@ -91,7 +91,7 @@ function renderPending(region, pending) {
       </p>
       <p class="muted">
         Changed your mind? You can still use Thaali normally until then. To cancel,
-        email <a href="mailto:contact.thaali@gmail.com">contact.thaali@gmail.com</a>
+        email <a href="mailto:contact.thaaliapp@gmail.com">contact.thaaliapp@gmail.com</a>
         from this account, or use the button below.
       </p>
       <div class="deletion-actions">

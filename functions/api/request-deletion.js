@@ -22,7 +22,7 @@ const JSON_HEADERS = { 'Content-Type': 'application/json', 'Cache-Control': 'no-
 
 // Where the deletion-review notification lands / is sent as. Reuses the same
 // env vars as the contact form so there's nothing new to configure.
-const DEFAULT_CONTACT_EMAIL = 'contact.thaali@gmail.com';
+const DEFAULT_CONTACT_EMAIL = 'contact.thaaliapp@gmail.com';
 
 // Grace window the cook is told about (and the admin waits) before actioning.
 const GRACE_HOURS = 48;

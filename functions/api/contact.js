@@ -20,7 +20,7 @@
 // env vars so there are no thaali.app addresses involved — just one Gmail you
 // create and verify with Brevo. CONTACT_FROM_EMAIL must be a sender you've
 // verified in Brevo; the simplest setup is to use the SAME Gmail for both.
-const DEFAULT_CONTACT_EMAIL = 'contact.thaali@gmail.com';
+const DEFAULT_CONTACT_EMAIL = 'contact.thaaliapp@gmail.com';
 const SUBJECT_MAX = 120;
 const MESSAGE_MAX = 4000;
 
