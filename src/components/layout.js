@@ -1,4 +1,4 @@
-import { isSignedIn, currentUser } from '../lib/auth.js';
+import { isSignedIn, currentUser, isAdmin } from '../lib/auth.js';
 import { cachedAvatarUrl } from '../lib/profileCache.js';
 
 function headerAvatar() {
@@ -20,6 +20,7 @@ function headerAvatar() {
       <div class="nav-dropdown" data-avatar-dropdown hidden>
         <a class="nav-dropdown-item" href="#/profile">Your profile</a>
         <a class="nav-dropdown-item" href="#/account">Your account</a>
+        ${isAdmin() ? `<a class="nav-dropdown-item" href="#/admin">Moderation</a>` : ''}
         <button class="nav-dropdown-item" data-action="signout">Sign out</button>
       </div>
     </div>`;

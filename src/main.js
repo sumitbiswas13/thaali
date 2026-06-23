@@ -15,6 +15,7 @@ import { Profile } from './views/Profile.js';
 import { News } from './views/News.js';
 import { Contact } from './views/Contact.js';
 import { Account } from './views/Account.js';
+import { Admin } from './views/Admin.js';
 import { TURNSTILE_SITE_KEY } from './lib/config.js';
 
 // Load fonts (Fraunces display, Inter body, IBM Plex Mono utility).
@@ -46,6 +47,7 @@ route('/profile', Profile);
 route('/news', News);
 route('/contact', Contact);
 route('/account', Account);
+route('/admin', Admin);
 
 // Global sign-out handler (header button exists across views)
 document.addEventListener('click', (e) => {

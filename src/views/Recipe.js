@@ -1,6 +1,6 @@
 import { Header, Footer } from '../components/layout.js';
 import { recipes, findRecipe, loadRecipes } from '../lib/mockData.js';
-import { isSignedIn } from '../lib/auth.js';
+import { isSignedIn, currentUser } from '../lib/auth.js';
 import { canEdit, deleteRecipe } from '../lib/recipes.js';
 import { navigate, onMount } from '../lib/router.js';
 import {
@@ -11,7 +11,7 @@ import {
   deleteComment,
   canDeleteComment,
 } from '../lib/social.js';
-import { reportRecipe, REPORT_REASONS } from '../lib/report.js';
+import { reportRecipe, reportComment, REPORT_REASONS } from '../lib/report.js';
 
 function esc(v) {
   if (v === undefined || v === null) return '';
@@ -247,6 +247,12 @@ export function Recipe(params) {
       const del = canDeleteComment(c, r)
         ? `<button class="c-delete" data-del="${c.id}" aria-label="delete comment">×</button>`
         : '';
+      // Report link: shown to signed-in cooks who didn't write the comment.
+      const me = currentUser();
+      const canReport = me && c.user_id !== me.id;
+      const report = canReport
+        ? `<button class="c-report" data-report-comment="${c.id}" aria-label="report comment" title="Report comment">⚑</button>`
+        : '';
       return `
         <li class="comment" data-cid="${c.id}">
           <a class="c-avatar" href="#/profile?id=${c.user_id}">${av}</a>
@@ -255,6 +261,7 @@ export function Recipe(params) {
               <a class="c-name" href="#/profile?id=${c.user_id}">${esc(c.author_name)}</a>
               <span class="c-time muted">${timeAgo(c.created_at)}</span>
               ${del}
+              ${report}
             </div>
             <p class="c-text">${esc(c.body)}</p>
           </div>
@@ -271,6 +278,33 @@ export function Recipe(params) {
             if (!list.children.length) list.innerHTML = '<li class="muted">No comments yet. Be the first.</li>';
           } catch (err) {
             alert('Delete failed: ' + err.message);
+          }
+        };
+      });
+
+      // Report a comment: pick a reason, optionally add a note, file it.
+      list.querySelectorAll('[data-report-comment]').forEach((btn) => {
+        btn.onclick = async () => {
+          if (btn.dataset.done === '1') return;
+          const reasons = REPORT_REASONS.map((o, i) => `${i + 1}. ${o.label}`).join('\n');
+          const pick = prompt(`Report this comment — choose a reason:\n${reasons}\n\nEnter 1-${REPORT_REASONS.length}:`);
+          if (!pick) return;
+          const idx = parseInt(pick, 10) - 1;
+          const reason = REPORT_REASONS[idx]?.value;
+          if (!reason) {
+            alert('Please enter a number from the list.');
+            return;
+          }
+          const note = prompt('Add a note (optional):') || '';
+          btn.disabled = true;
+          try {
+            await reportComment(btn.dataset.reportComment, reason, note);
+            btn.dataset.done = '1';
+            btn.textContent = '✓';
+            btn.title = 'Reported';
+          } catch (err) {
+            alert(err.message);
+            btn.disabled = false;
           }
         };
       });

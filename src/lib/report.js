@@ -15,10 +15,9 @@ export const REPORT_REASONS = [
   { value: 'other', label: 'Something else' },
 ];
 
-// File a report. `reason` is one of REPORT_REASONS values; `note` is optional.
-// Resolves on success; throws with a friendly message (including the
-// already-reported and self-report cases).
-export async function reportRecipe(recipeId, reason, note) {
+// Internal: POST a report to the generalized endpoint. `target` is either
+// { recipe_id } or { comment_id }. Throws a friendly message on failure.
+async function fileReport(target, reason, note) {
   if (!isSupabaseReady()) throw new Error('Supabase is not configured.');
   const user = currentUser();
   if (!user) throw new Error('You must be signed in.');
@@ -29,13 +28,13 @@ export async function reportRecipe(recipeId, reason, note) {
 
   let resp;
   try {
-    resp = await fetch('/api/report-recipe', {
+    resp = await fetch('/api/report-content', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ recipe_id: recipeId, reason, note: note || '' }),
+      body: JSON.stringify({ ...target, reason, note: note || '' }),
     });
   } catch {
     throw new Error('Network error — please try again.');
@@ -52,4 +51,16 @@ export async function reportRecipe(recipeId, reason, note) {
     throw new Error(payload.error || 'Could not file your report. Please try again.');
   }
   return payload;
+}
+
+// File a report against a recipe. `reason` is one of REPORT_REASONS values;
+// `note` is optional. Resolves on success; throws a friendly message
+// (including already-reported and self-report cases).
+export async function reportRecipe(recipeId, reason, note) {
+  return fileReport({ recipe_id: recipeId }, reason, note);
+}
+
+// File a report against a comment. Same contract as reportRecipe.
+export async function reportComment(commentId, reason, note) {
+  return fileReport({ comment_id: commentId }, reason, note);
 }
