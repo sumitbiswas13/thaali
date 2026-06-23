@@ -135,7 +135,11 @@ function renderDeleteStart(region, recipeCount) {
   `;
 
   region.querySelector('[data-action="start-deletion"]')?.addEventListener('click', () => {
-    region.querySelector('[data-action="start-deletion"]').hidden = true;
+    // Hide via inline style, not the `hidden` attribute: `.btn { display:
+    // inline-flex }` overrides the attribute's display:none, so the button
+    // would otherwise stay visible above the open form.
+    const trigger = region.querySelector('[data-action="start-deletion"]');
+    if (trigger) trigger.style.display = 'none';
     renderConfirm(region.querySelector('#deletion-confirm'), count);
   });
 }
