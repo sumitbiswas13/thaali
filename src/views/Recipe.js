@@ -302,8 +302,8 @@ export function Recipe(params) {
 
       <p class="byline" style="margin-top:32px;">Recipe by ${
         r.author_id
-          ? `<a class="byline-link" href="#/profile?id=${r.author_id}">${esc(r.author)}</a>`
-          : esc(r.author)
+          ? `<a class="byline-link" href="#/profile?id=${r.author_id}">${esc(r.author || 'A Thaali cook')}</a>`
+          : esc(r.author || 'A Thaali cook')
       }</p>
       ${
         r.source_url

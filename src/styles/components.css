@@ -697,3 +697,84 @@
 }
 .news-card:hover .news-readmore { color: var(--paprika); }
 .news-media-empty span { font-size: 2.2rem; opacity: .55; }
+
+/* ===========================================================================
+   Account page  (#/account) — profile summary + account-deletion flow.
+   Styling derives from the existing kitchen-warmth tokens. The "danger zone"
+   uses a restrained terracotta border (not a new accent) so it reads as
+   careful-here without fighting the saffron system.
+   =========================================================================== */
+.account-head { margin: 8px 0 24px; }
+.account-head h2 { font-size: 1.8rem; }
+
+.account-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.account-card h3 { margin-bottom: 16px; }
+
+.account-facts { margin: 0 0 20px; }
+.account-facts > div {
+  display: flex;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.account-facts > div:last-child { border-bottom: none; }
+.account-facts dt {
+  flex: 0 0 96px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+.account-facts dd { margin: 0; }
+
+/* Danger zone — terracotta hairline, derived from the existing warm palette. */
+.danger-zone {
+  border-color: #c0532b;
+  border-width: 1.5px;
+}
+.danger-zone h3 { color: #a8431f; }
+
+.deletion-trigger { margin-top: 4px; }
+.deletion-trigger:hover { border-color: #c0532b; color: #a8431f; }
+
+.deletion-confirm { margin-top: 16px; }
+.deletion-confirm .field { margin-bottom: 16px; }
+
+.radio-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 400;
+  margin: 8px 0;
+  cursor: pointer;
+}
+.radio-row input { width: auto; margin: 0; }
+
+.deletion-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.deletion-confirm-btn {
+  background: #c0532b;
+  box-shadow: 0 2px 0 rgba(120, 40, 20, 0.25);
+}
+.deletion-confirm-btn:hover:not(:disabled) { background: #a8431f; }
+.deletion-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.deletion-pending {
+  background: #fbf3ec;
+  border: 1px solid #e7c9b6;
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.deletion-pending p { margin: 0 0 10px; }
+.deletion-pending p:last-of-type { margin-bottom: 14px; }
+.deletion-pending a { color: #a8431f; text-decoration: underline; }

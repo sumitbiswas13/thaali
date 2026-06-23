@@ -19,6 +19,7 @@ function headerAvatar() {
       </button>
       <div class="nav-dropdown" data-avatar-dropdown hidden>
         <a class="nav-dropdown-item" href="#/profile">Your profile</a>
+        <a class="nav-dropdown-item" href="#/account">Your account</a>
         <button class="nav-dropdown-item" data-action="signout">Sign out</button>
       </div>
     </div>`;

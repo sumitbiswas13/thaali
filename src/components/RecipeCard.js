@@ -19,7 +19,7 @@ export function RecipeCard(r) {
           ${r.cuisine ? `<span>${r.cuisine}</span>` : ''}
         </div>
         <div class="card-foot">
-          <span class="byline">by ${r.author}</span>
+          <span class="byline">by ${r.author || 'A Thaali cook'}</span>
           <span class="card-social" data-recipe-id="${r.id}" hidden>
             <span class="card-stat card-likes">♥ <span class="n">0</span></span>
             <span class="card-stat card-comments">💬 <span class="n">0</span></span>
