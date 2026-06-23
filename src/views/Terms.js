@@ -96,8 +96,8 @@ export function Terms() {
 
       <h2>Contact</h2>
       <p>
-        Questions about these terms? Email
-        <a href="mailto:contact.thaaliapp@gmail.com">contact.thaaliapp@gmail.com</a>.
+        Questions about these terms? Reach us through our
+        <a href="#/contact">contact form</a>.
       </p>
     </main>
     ${Footer()}

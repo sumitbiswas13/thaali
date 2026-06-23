@@ -23,8 +23,8 @@ export function Privacy() {
       <h2>Who we are</h2>
       <p>
         Thaali (“we”, “us”) operates the website at
-        <a href="https://thaali.app">thaali.app</a>. You can reach us any time at
-        <a href="mailto:contact.thaaliapp@gmail.com">contact.thaaliapp@gmail.com</a>.
+        <a href="https://thaali.app">thaali.app</a>. You can reach us any time
+        through our <a href="#/contact">contact form</a>.
       </p>
 
       <h2>Information we collect</h2>
@@ -131,8 +131,8 @@ export function Privacy() {
 
       <h2>Contact</h2>
       <p>
-        Questions about this policy? Email
-        <a href="mailto:contact.thaaliapp@gmail.com">contact.thaaliapp@gmail.com</a>.
+        Questions about this policy? Reach us through our
+        <a href="#/contact">contact form</a>.
       </p>
     </main>
     ${Footer()}
