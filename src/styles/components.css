@@ -354,11 +354,12 @@
 }
 
 /* ── Featured cooks + activity ────────────────────── */
-.cooks { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; align-items: stretch; }
+.cooks { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 14px; }
 .cook {
   background: var(--paper-raised); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 22px; text-align: center;
   display: flex; flex-direction: column; align-items: center;
+  width: 150px; flex: 0 0 auto;
   text-decoration: none; color: inherit; transition: transform .15s ease, box-shadow .15s ease;
 }
 a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,26,.12); }
