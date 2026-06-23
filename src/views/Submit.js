@@ -106,9 +106,10 @@ export function Submit(params = {}) {
     ? ''
     : `
       <div class="import-bar">
-        <input type="url" id="import-url" placeholder="Paste a recipe link — yours or anywhere" />
+        <input type="url" id="import-url" placeholder="Paste a recipe link to import" />
         <button class="btn btn-primary" data-action="import">Read the page</button>
       </div>
+      <p class="import-help muted">Bring in a recipe from anywhere — yours or one you love. We'll fill in what we can; you make it your own.</p>
       <p class="import-msg" id="import-msg"></p>
       <button class="add-row" data-action="scratch">or start from scratch →</button>`;
 

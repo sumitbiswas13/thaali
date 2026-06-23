@@ -820,3 +820,12 @@
 .photo-dropzone-hint {
   font-size: 0.8rem;
 }
+
+/* Persistent helper line under the import bar — sets the "bring it in, make it
+   your own" norm without nagging. Stays visible (unlike the placeholder). */
+.import-help {
+  margin: -4px 0 14px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  max-width: 60ch;
+}
