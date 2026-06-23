@@ -11,6 +11,7 @@ import {
   deleteComment,
   canDeleteComment,
 } from '../lib/social.js';
+import { reportRecipe, REPORT_REASONS } from '../lib/report.js';
 
 function esc(v) {
   if (v === undefined || v === null) return '';
@@ -176,6 +177,62 @@ export function Recipe(params) {
       }
     });
 
+    // --- report ---
+    const reportBtn = document.querySelector('[data-action="report"]');
+    const reportForm = document.querySelector('#report-form');
+    if (reportBtn && reportForm) {
+      let reported = false; // once filed, don't allow re-open in this view
+      reportBtn.addEventListener('click', () => {
+        if (reported) return;
+        if (!reportForm.hidden) {
+          reportForm.hidden = true;
+          return;
+        }
+        reportForm.hidden = false;
+        reportForm.innerHTML = `
+          <div class="field">
+            <label for="report-reason">Why are you reporting this recipe?</label>
+            <select id="report-reason">
+              ${REPORT_REASONS.map((o) => `<option value="${o.value}">${esc(o.label)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label for="report-note">Add a note <span class="muted">(optional)</span></label>
+            <textarea id="report-note" rows="2" maxlength="1000" placeholder="Anything that helps us review"></textarea>
+          </div>
+          <div class="report-actions">
+            <button class="btn btn-ghost" data-action="report-cancel">Cancel</button>
+            <button class="btn btn-primary" data-action="report-submit">Submit report</button>
+            <span class="import-msg" id="report-status"></span>
+          </div>
+        `;
+
+        const status = reportForm.querySelector('#report-status');
+        reportForm.querySelector('[data-action="report-cancel"]')?.addEventListener('click', () => {
+          reportForm.hidden = true;
+        });
+        reportForm.querySelector('[data-action="report-submit"]')?.addEventListener('click', async (e) => {
+          const reason = reportForm.querySelector('#report-reason').value;
+          const note = reportForm.querySelector('#report-note').value.trim();
+          e.target.disabled = true;
+          status.textContent = 'Submitting…';
+          status.className = 'import-msg';
+          try {
+            await reportRecipe(r.id, reason, note);
+            reported = true;
+            reportForm.innerHTML = '<p class="import-msg ok">Thanks — your report has been sent for review.</p>';
+            // Soften the button so it reads as done.
+            reportBtn.querySelector('.report-label').textContent = 'Reported';
+            reportBtn.disabled = true;
+          } catch (err) {
+            e.target.disabled = false;
+            status.textContent = err.message;
+            status.className = 'import-msg warn';
+          }
+        });
+      });
+    }
+
     // --- comments ---
     const list = document.querySelector('#comment-list');
     const input = document.querySelector('#comment-input');
@@ -287,7 +344,15 @@ export function Recipe(params) {
         <button class="social-btn" data-action="share">
           <span>↗</span> <span class="share-label">Share</span>
         </button>
+        ${
+          editable
+            ? ''
+            : `<button class="social-btn report-btn" data-action="report" title="Report this recipe">
+                 <span>⚑</span> <span class="report-label">Report</span>
+               </button>`
+        }
       </div>
+      ${editable ? '' : '<div class="report-form" id="report-form" hidden></div>'}
 
       <div class="recipe-cols">
         <div>

@@ -845,3 +845,27 @@
   font-size: 0.88rem;
   margin: 8px 0 14px;
 }
+
+/* ===========================================================================
+   Recipe report — a quiet flag button in the social bar + an inline form.
+   Phase 1 of moderation; reports email the admin to review by hand.
+   =========================================================================== */
+.report-btn { color: var(--ink-soft); }
+.report-btn:hover { color: #a8431f; }
+.report-btn[disabled] { opacity: 0.6; cursor: default; }
+
+.report-form {
+  margin: 12px 0 4px;
+  padding: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  max-width: 460px;
+}
+.report-form .field { margin-bottom: 12px; }
+.report-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
