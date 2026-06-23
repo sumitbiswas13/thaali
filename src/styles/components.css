@@ -839,3 +839,9 @@
   line-height: 1.45;
   max-width: 60ch;
 }
+
+/* Profile follow counts — sits between bio and the Follow / Edit button. */
+.profile-follow-counts {
+  font-size: 0.88rem;
+  margin: 8px 0 14px;
+}

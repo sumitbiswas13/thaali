@@ -6,6 +6,7 @@ import { isSignedIn, currentUser } from '../lib/auth.js';
 import { fetchProfile, ensureOwnProfile, updateProfile, uploadAvatar } from '../lib/profiles.js';
 import { COUNTRIES, countryName } from '../lib/categories.js';
 import { setCachedProfile } from '../lib/profileCache.js';
+import { fetchFollowState, toggleFollow } from '../lib/follows.js';
 
 // Route: #/profile           → own profile
 //        #/profile?id=<uid>  → another cook's profile
@@ -53,7 +54,12 @@ function renderProfile(wrap, profile, isOwner) {
         <h2 class="profile-name">${esc(name)}</h2>
         ${profile.country ? `<p class="profile-country muted">📍 ${esc(countryName(profile.country))}</p>` : ''}
         <p class="profile-bio">${profile.bio ? esc(profile.bio) : '<span class="muted">No bio yet.</span>'}</p>
-        ${isOwner ? `<button class="btn btn-ghost" data-action="edit-profile">Edit profile</button>` : ''}
+        <p class="profile-follow-counts muted" id="follow-counts">&nbsp;</p>
+        ${
+          isOwner
+            ? `<button class="btn btn-ghost" data-action="edit-profile">Edit profile</button>`
+            : `<button class="btn btn-primary" data-action="follow-toggle" disabled>Follow</button>`
+        }
       </div>
     </section>
 
@@ -70,6 +76,51 @@ function renderProfile(wrap, profile, isOwner) {
           }</p>`
     }
   `;
+
+  // Load follow counts (and follow state) asynchronously; the counts line shows
+  // a non-breaking space until they arrive so the layout doesn't jump.
+  const countsEl = wrap.querySelector('#follow-counts');
+  const followBtn = wrap.querySelector('[data-action="follow-toggle"]');
+  let followState = { followers: 0, following: 0, isFollowing: false };
+
+  const paintCounts = () => {
+    if (!countsEl) return;
+    const f = followState.followers;
+    const g = followState.following;
+    countsEl.textContent =
+      `${f} follower${f === 1 ? '' : 's'} · ${g} following`;
+  };
+  const paintBtn = () => {
+    if (!followBtn) return;
+    followBtn.textContent = followState.isFollowing ? 'Following' : 'Follow';
+    followBtn.classList.toggle('btn-primary', !followState.isFollowing);
+    followBtn.classList.toggle('btn-ghost', followState.isFollowing);
+    followBtn.disabled = false;
+  };
+
+  fetchFollowState(profile.id)
+    .then((state) => {
+      followState = state;
+      paintCounts();
+      paintBtn();
+    })
+    .catch(() => {
+      // On error, leave counts blank and the button disabled — fail quiet.
+      if (countsEl) countsEl.textContent = '';
+    });
+
+  if (!isOwner && followBtn) {
+    followBtn.addEventListener('click', async () => {
+      followBtn.disabled = true;
+      try {
+        followState = await toggleFollow(profile.id, followState.isFollowing);
+        paintCounts();
+        paintBtn();
+      } catch (err) {
+        followBtn.disabled = false;
+      }
+    });
+  }
 
   if (isOwner) {
     wrap.querySelector('[data-action="edit-profile"]')?.addEventListener('click', () => {
