@@ -869,3 +869,28 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+
+/* ===========================================================================
+   Mobile header fix (2026-06-23): on narrow screens the nav row
+   (Browse / News / Add a recipe + avatar) overflowed the right edge and
+   clipped the avatar. Drop nav-actions onto its own full-width line below the
+   brand, allow it to wrap, and right-align so the avatar always stays in view.
+   =========================================================================== */
+@media (max-width: 560px) {
+  /* Brand stays top-left on its own; nav drops below it. */
+  .site-header .wrap { flex-wrap: wrap; row-gap: 8px; }
+  .brand { flex: 1 1 auto; min-width: 0; }
+
+  /* Full-width nav row that can wrap; right-aligned, avatar last but contained. */
+  .nav-actions {
+    order: 2;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .nav-actions .btn { padding: 7px 12px; font-size: 0.82rem; }
+
+  /* Keep the avatar from being shoved past the edge; let it shrink-wrap in place. */
+  .nav-avatar { margin-left: 2px; }
+}
