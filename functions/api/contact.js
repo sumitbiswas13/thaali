@@ -16,14 +16,21 @@
 // edge and touches no Supabase data.
 // ===========================================================================
 
-const TO_ADDRESS = 'contact@thaali.app';
-const FROM_ADDRESS = 'noreply@thaali.app'; // must be on a domain you've verified
+// Where contact-form messages land, and who they're sent as. Both come from
+// env vars so there are no thaali.app addresses involved — just one Gmail you
+// create and verify with Brevo. CONTACT_FROM_EMAIL must be a sender you've
+// verified in Brevo; the simplest setup is to use the SAME Gmail for both.
+const DEFAULT_CONTACT_EMAIL = 'contact.thaali@gmail.com';
 const SUBJECT_MAX = 120;
 const MESSAGE_MAX = 4000;
 
 const JSON_HEADERS = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
 
 export async function onRequestPost({ request, env }) {
+  // Resolve the to/from addresses (env first, then a sane default).
+  const TO_ADDRESS = (env && env.CONTACT_TO_EMAIL) || DEFAULT_CONTACT_EMAIL;
+  const FROM_ADDRESS = (env && env.CONTACT_FROM_EMAIL) || TO_ADDRESS;
+
   let body;
   try {
     body = await request.json();
@@ -72,9 +79,13 @@ export async function onRequestPost({ request, env }) {
     `${message}\n`;
 
   // --- Send ---------------------------------------------------------------
+  // Prefer Brevo (free tier 300/day, verify a single sender email — no domain
+  // limit), fall back to Resend if that's what you have configured instead.
   try {
-    if (env && env.RESEND_API_KEY) {
-      await sendViaResend(env.RESEND_API_KEY, { email, cleanSubject, textBody });
+    if (env && env.BREVO_API_KEY) {
+      await sendViaBrevo(env.BREVO_API_KEY, { email, cleanSubject, textBody, toAddress: TO_ADDRESS, fromAddress: FROM_ADDRESS });
+    } else if (env && env.RESEND_API_KEY) {
+      await sendViaResend(env.RESEND_API_KEY, { email, cleanSubject, textBody, toAddress: TO_ADDRESS, fromAddress: FROM_ADDRESS });
     } else {
       // No provider configured — fail loudly so you notice during setup,
       // rather than silently swallowing a cook's message.
@@ -109,9 +120,33 @@ async function verifyTurnstile(secret, token, ip) {
   }
 }
 
+// Brevo — https://brevo.com (free tier 300 emails/day, no domain-count limit;
+// just verify a single sender address). Set BREVO_API_KEY in Cloudflare Pages.
+async function sendViaBrevo(apiKey, { email, cleanSubject, textBody, toAddress, fromAddress }) {
+  const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { email: fromAddress, name: 'Thaali' },
+      to: [{ email: toAddress }],
+      replyTo: { email },
+      subject: cleanSubject,
+      textContent: textBody,
+    }),
+  });
+  if (!resp.ok) {
+    const detail = await resp.text().catch(() => '');
+    throw new Error(`Brevo ${resp.status}: ${detail}`);
+  }
+}
+
 // Resend — https://resend.com (free tier 3k/mo). Set RESEND_API_KEY in
 // Cloudflare Pages → Settings → Environment variables.
-async function sendViaResend(apiKey, { email, cleanSubject, textBody }) {
+async function sendViaResend(apiKey, { email, cleanSubject, textBody, toAddress, fromAddress }) {
   const resp = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -119,8 +154,8 @@ async function sendViaResend(apiKey, { email, cleanSubject, textBody }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: `Thaali <${FROM_ADDRESS}>`,
-      to: [TO_ADDRESS],
+      from: `Thaali <${fromAddress}>`,
+      to: [toAddress],
       reply_to: email,
       subject: cleanSubject,
       text: textBody,

@@ -1,148 +1,138 @@
-# Thaali — Contact form & News feed setup
+# Thaali — Setup runbook: Contact form + News feed + CAPTCHA
 
-Two new features were added: a **News feed** (`#/news`) and a **Contact &
-support** form (`#/contact`). Both rely on Cloudflare Pages Functions
-(`functions/api/news.js` and `functions/api/contact.js`). This doc covers the
-one-time setup so they work in production.
+This is the one-time setup for the two features (News feed at `#/news`, Contact
+form at `#/contact`) plus the optional CAPTCHA. Do the sections **in order: A → B → C**.
 
----
+Everything is driven by Cloudflare Pages Functions (`functions/api/news.js`,
+`functions/api/contact.js`) plus a few environment variables. There's no SQL.
 
-## A. Contact form → email to you
+**TL;DR of what you'll set up:**
 
-The contact form posts to `/api/contact`, which sends an email to
-**contact@thaali.app**. You then forward `contact@thaali.app` →
-**sumitbiswas@hotmail.com** via Cloudflare Email Routing.
+| Order | Section | What it does | Required? |
+|---|---|---|---|
+| A | Contact email (Brevo + Gmail) | Form sends mail → lands in a Thaali Gmail inbox | Yes (for the form to work) |
+| B | News feed (Guardian) | Food stories on the News page | Works already; key optional |
+| C | CAPTCHA (Cloudflare Turnstile) | Bot protection on the contact form | Optional |
 
-There are two pieces: **(1) sending** the email, and **(2) forwarding** it to
-your Hotmail.
-
-### Step 1 — Sending email (Resend)
-
-The Function uses [Resend](https://resend.com) to send mail. Free tier is 3,000
-emails/month — far more than a contact form will ever need.
-
-1. **Create a Resend account** at https://resend.com (free, no card).
-2. **Add & verify your domain** `thaali.app`:
-   - Resend → **Domains** → **Add Domain** → enter `thaali.app`.
-   - Resend shows you 3 DNS records (an MX, an SPF `TXT`, and a DKIM `TXT`).
-   - Add each one in **Cloudflare → DNS → Records** for `thaali.app`.
-     **Important:** set these DNS records to **DNS only** (grey cloud), not
-     proxied (orange cloud).
-   - Back in Resend, click **Verify**. Takes a few minutes.
-3. **Create an API key:** Resend → **API Keys** → **Create** → copy it
-   (starts with `re_…`). You only see it once.
-4. **Add the key to Cloudflare Pages:**
-   - Cloudflare → **Workers & Pages → thaali → Settings → Variables and Secrets**.
-   - Under **Environment variables** (Production), add:
-     - Name: `RESEND_API_KEY`  Value: `re_…your key…`
-   - Click **Encrypt** so it's stored as a secret, then **Save**.
-   - Redeploy (any push, or **Deployments → Retry deployment**) so the
-     Function picks up the new variable.
-
-> The Function's `FROM_ADDRESS` is `noreply@thaali.app`. That address only
-> needs to be on the verified domain — you don't need a real mailbox for it.
-> The cook's own email is set as **reply-to**, so you can just hit "Reply" in
-> Hotmail to answer them.
-
-### Step 2 — Forwarding contact@thaali.app → your Hotmail
-
-This is the Cloudflare Email Routing piece (the one noted as "still
-unconfigured" in earlier sessions).
-
-1. Cloudflare → select **thaali.app** → **Email → Email Routing**.
-2. If it's the first time, click **Get started / Enable Email Routing**.
-   Cloudflare will offer to **add the required MX + TXT records
-   automatically** — accept that. (If you see the stuck/!"Add records
-   automatically" state from before, use **Disable → re-enable** to reset it,
-   then let it add the records.)
-3. Under **Destination addresses**, add **sumitbiswas@hotmail.com** and click
-   the verification link Cloudflare emails to that Hotmail inbox.
-4. Under **Routing rules → Custom addresses**, create:
-   - Custom address: `contact@thaali.app`
-   - Action: **Send to** → `sumitbiswas@hotmail.com`
-5. Save. Send a test through the form — it should land in your Hotmail.
-
-> **DNS note — MX coexistence:** Resend's *sending* uses its own MX on a
-> subdomain (e.g. `send.thaali.app`), while Cloudflare Email Routing's
-> *receiving* MX is on the root `thaali.app`. They don't collide. Just make
-> sure you don't delete the Email Routing MX records when adding Resend's.
-
-### Alternative (no Resend)
-
-If you'd rather not use Resend, you can swap `sendViaResend()` in
-`functions/api/contact.js` for any HTTP email provider (Postmark, Brevo,
-SendGrid, Mailgun, etc.) — they all take an API key + a POST. The rest of the
-Function (validation, length caps, reply-to) stays the same. Until a provider
-key is set, the form returns a friendly "not fully configured yet" message
-rather than failing silently.
+> **Why Brevo, not Resend?** Resend's free tier allows only one domain per
+> account, and you've used that on another project. Brevo's free tier is 300
+> emails/day and lets you verify a single *sender email* with no domain-count
+> limit — so it works without touching your Resend account. The Function tries
+> Brevo first (`BREVO_API_KEY`) and falls back to Resend (`RESEND_API_KEY`) if
+> you ever prefer that.
 
 ---
 
-## B. News feed → Guardian
+# A. Contact form → your Thaali Gmail
 
-The News page calls `/api/news`, which pulls food/cooking stories from
-**The Guardian's `food` section**. The Guardian gives **non-profit projects a
-free key** — which is exactly Thaali.
+No `thaali.app` email addresses are involved. You create one Gmail (e.g.
+`contact.thaali@gmail.com`), and every form submission is emailed straight to
+it. The cook's own address rides along as **Reply-To**, so you just hit Reply
+in Gmail to answer them.
 
-**It works with NO setup** (it falls back to the Guardian Food RSS feed, which
-needs no key). To get richer cards (better thumbnails, summaries, bylines),
-add a free key:
+You still need a free **Brevo** account — that's the service that actually
+*sends* the email to your Gmail (Gmail is the mailbox; Brevo is the postman).
+There's no Cloudflare Email Routing and no virtual address.
+
+### Steps
+
+1. **Create the Gmail.** e.g. `contact.thaali@gmail.com`. This is both the
+   inbox you'll read and the verified sender.
+2. **Create a free Brevo account** at https://www.brevo.com (no card needed).
+   Sign up using that same Gmail, or any email — doesn't matter.
+3. **Verify the Gmail as a sender.** Brevo → **Senders, Domains & Dedicated IPs
+   → Senders → Add a sender** → enter `contact.thaali@gmail.com`. Brevo emails a
+   confirmation link to it; open Gmail, click the link. (Because it's a real
+   Gmail inbox, the link just arrives — no domain setup, no chicken-and-egg.)
+4. **Create an API key.** Brevo → **SMTP & API → API Keys → Generate a new API
+   key.** Copy it (starts with `xkeysib-…`).
+5. **Add three variables** in Cloudflare → **Workers & Pages → thaali →
+   Settings → Variables and Secrets → Environment variables (Production)**:
+   - `BREVO_API_KEY` = `xkeysib-…`  → **Encrypt**
+   - `CONTACT_TO_EMAIL` = `contact.thaali@gmail.com`  (where messages land)
+   - `CONTACT_FROM_EMAIL` = `contact.thaali@gmail.com`  (the verified sender)
+   - Then **Save**.
+6. **Redeploy** (push, or **Deployments → Retry deployment**) so the Function
+   picks up the new variables.
+
+> `CONTACT_TO_EMAIL` and `CONTACT_FROM_EMAIL` can be the same Gmail (simplest),
+> or different if you ever want to read mail in one place and send from another.
+> If you leave them unset, the Function falls back to `contact.thaali@gmail.com`
+> — so set them to whatever Gmail you actually create.
+
+> **Deliverability note:** sending from a `@gmail.com` address via Brevo works
+> fine for mail going to your own inbox. Gmail may show a faint "via brevo"
+> note; that's harmless here. (A custom domain sender looks cleaner, but you've
+> chosen to avoid domain email — this is the tradeoff, and it's a fine one.)
+
+---
+
+# B. News feed → Guardian
+
+The News page (`#/news`) calls `/api/news`, which pulls food/cooking stories
+from **The Guardian's `food` section**. The Guardian gives non-profit projects
+a free key — which is exactly Thaali.
+
+**It already works with NO setup** — with no key, it falls back to the Guardian
+Food RSS feed (no key needed). To get richer cards (better thumbnails,
+summaries, bylines), add a free key:
 
 1. Get a key at https://open-platform.theguardian.com/access/ → choose the
    **Developer / non-commercial** key (free, instant, no card).
 2. Cloudflare → **thaali → Settings → Variables and Secrets → Environment
-   variables** → add:
-   - Name: `GUARDIAN_API_KEY`  Value: `your-key`
-   - Encrypt + Save, then redeploy.
+   variables**:
+   - Name: `GUARDIAN_API_KEY`   Value: your key  → **Encrypt** → **Save**.
+3. Redeploy.
 
-The feed is cached at Cloudflare's edge for 30 minutes and again in the browser
-for 10 minutes, so the upstream API is hit a couple of times an hour at most —
-nowhere near the free 500/day floor.
-
----
+The feed is cached at Cloudflare's edge for 30 min and in the browser for 10
+min, so the upstream API is hit only a couple of times an hour — nowhere near
+the free 500/day floor.
 
 ---
 
-## C. Contact form CAPTCHA (Cloudflare Turnstile)
+# C. Contact form CAPTCHA (Cloudflare Turnstile)
 
-The contact form can show a Cloudflare Turnstile widget below the message box.
-The **Send** button stays disabled until the visitor passes the check (the
-green tick), and the server Function verifies the token before sending — so a
-bot can't skip the widget by POSTing directly.
+Adds a Turnstile widget below the Message box. **Send stays disabled until the
+visitor passes the check** (the green tick), and the Function verifies the
+token server-side before sending, so a bot can't skip it.
 
 Turnstile is free with no usage cap, privacy-friendly (no Google tracking),
-and usually shows a green tick with no interaction. It works whether or not
-your traffic is proxied through Cloudflare.
+and usually shows a tick with no interaction.
 
-**It's optional.** With no keys set, the form renders without the widget and
-still sends (once Resend is configured). Turn it on like this:
+**Optional.** With no keys set, the form renders without the widget and still
+sends. Turn it on:
 
-1. Cloudflare Dashboard → **Turnstile** → **Add widget**.
+1. Cloudflare Dashboard → **Turnstile → Add widget.**
    - Name: `Thaali contact`
-   - Hostnames: `thaali.app` (add `localhost` too if you ever test locally)
-   - Widget mode: **Managed** (recommended — invisible for most, a tick when needed)
+   - Hostnames: `thaali.app` (add `localhost` too if you test locally)
+   - Widget mode: **Managed** (recommended)
 2. Cloudflare shows a **Site Key** (public) and a **Secret Key** (private).
-3. Add both to **thaali → Settings → Variables and Secrets → Environment
-   variables** (Production):
-   - `VITE_TURNSTILE_SITE_KEY` = the **site** key.
-     This is a *build-time* var (Vite inlines it into the browser bundle), so
-     it can be a plain variable — it's public by design.
+3. Add **both** to **thaali → Settings → Variables and Secrets → Environment
+   variables (Production)**:
+   - `VITE_TURNSTILE_SITE_KEY` = the **site** key. This is a *build-time* var
+     (Vite inlines it into the browser bundle), so a plain variable is fine —
+     it's public by design.
    - `TURNSTILE_SECRET_KEY` = the **secret** key. **Encrypt** this one.
-4. Redeploy (push or **Retry deployment**) so the build picks up the site key
-   and the Function picks up the secret.
+4. **Redeploy** so the build picks up the site key and the Function picks up the
+   secret.
 
-> Both keys must be present for the gate to work end-to-end: the site key makes
-> the widget appear, the secret key makes the server enforce it. If you set only
-> the secret, the widget won't render but the Function will reject every
-> submission (no token) — so set them together.
+> Set both together. Site key alone → widget shows but server doesn't enforce.
+> Secret key alone → widget won't render and the server rejects every
+> submission (no token). The secret key is the security boundary — make sure
+> it's added as an **encrypted** variable, never plain.
 
+---
 
+## Quick reference — env vars
 
 | Variable | Where | Required? | Purpose |
 |---|---|---|---|
-| `RESEND_API_KEY` | Cloudflare Pages env (secret) | Yes, for contact form | Sends contact emails |
+| `BREVO_API_KEY` | Cloudflare Pages env (secret) | Yes, for contact form | Sends contact emails |
+| `CONTACT_TO_EMAIL` | Cloudflare Pages env | Recommended | Inbox where messages land (Gmail) |
+| `CONTACT_FROM_EMAIL` | Cloudflare Pages env | Recommended | Verified Brevo sender (same Gmail) |
+| `RESEND_API_KEY` | Cloudflare Pages env (secret) | Optional fallback | Alternative sender |
 | `GUARDIAN_API_KEY` | Cloudflare Pages env (secret) | Optional | Richer news cards (RSS fallback otherwise) |
-| `VITE_TURNSTILE_SITE_KEY` | Cloudflare Pages env (build var) | Optional | CAPTCHA on contact form (public site key) |
+| `VITE_TURNSTILE_SITE_KEY` | Cloudflare Pages env (build var) | Optional | CAPTCHA widget (public site key) |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Pages env (secret) | Optional | Server-side CAPTCHA verification |
 
 ## New routes & files
@@ -152,8 +142,9 @@ still sends (once Resend is configured). Turn it on like this:
 #/contact   Contact & support form (footer link)
 
 functions/api/news.js      Guardian food news (API + RSS fallback, edge-cached)
-functions/api/contact.js   Contact form → email via Resend
+functions/api/contact.js   Contact form → email (Brevo, Resend fallback) + Turnstile verify
 src/lib/news.js            client news fetcher (in-memory cache)
+src/lib/config.js          public client config (Turnstile site key)
 src/views/News.js          News page
-src/views/Contact.js       Contact form page
+src/views/Contact.js       Contact form page (with Turnstile widget)
 ```
