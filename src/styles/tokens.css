@@ -12,6 +12,8 @@
   --cumin: #8a6d3b;          /* secondary warm */
   --line: #e7ded0;           /* hairline dividers on paper */
   --line-strong: #d4c7b2;
+  --brick: #b5482e;          /* warm brick red — ghost button border */
+  --brick-deep: #8a3621;     /* brick hover */
 
   /* Type */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
@@ -80,9 +82,9 @@ img { max-width: 100%; display: block; }
 .btn-ghost {
   background: transparent;
   color: var(--ink);
-  border: 1.5px solid var(--saffron);
+  border: 1.5px solid var(--brick);
 }
-.btn-ghost:hover { border-color: var(--paprika); color: var(--paprika); background: rgba(168, 125, 24, 0.06); }
+.btn-ghost:hover { border-color: var(--brick-deep); color: var(--brick-deep); background: rgba(181, 72, 46, 0.07); }
 
 /* Focus visibility — accessibility floor */
 :focus-visible {
