@@ -106,6 +106,7 @@
   position: relative;
   display: grid;
   place-items: center;
+  overflow: hidden;
 }
 /* the signature: a thaali — concentric platter rings */
 .platter {
@@ -336,6 +337,8 @@
   background: linear-gradient(135deg, var(--turmeric), var(--paprika));
   display: grid; place-items: center;
   margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
 }
 .recipe-detail h1 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 12px; }
 .recipe-cols { display: grid; grid-template-columns: 1fr 1.6fr; gap: calc(var(--space) * 5); margin-top: 32px; }
@@ -468,7 +471,7 @@
 .muted { color: var(--ink-soft); }
 
 /* --- Recipe detail: photo, step timers, source link (2026-06-21) --------- */
-.hero-img .hero-photo { width: 100%; height: 100%; object-fit: cover; }
+.hero-img .hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 .step-timer-badge {
   display: inline-block;
@@ -491,7 +494,14 @@
 .source-link a:hover { color: var(--paprika); text-decoration: underline; }
 
 /* --- Card photo (grid) --------------------------------------------------- */
-.card-media .card-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card-media .card-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 /* --- Social bar (like + share) ------------------------------------------- */
 .social-bar { display: flex; gap: 12px; margin: 20px 0 8px; }
