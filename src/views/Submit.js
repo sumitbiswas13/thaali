@@ -159,7 +159,7 @@ function renderForm(wrap, data, existing = null) {
         <textarea id="f-desc" rows="2" placeholder="A line about this dish">${esc(data.description)}</textarea>
         ${
           data.source_url && (data.imported_fields || []).length
-            ? `<p class="import-help muted" style="margin-top:6px;">This one was imported — add your own touch to publish: a short description here, or a photo of your version above.</p>`
+            ? `<p class="import-help muted" style="margin-top:6px;">This one was imported — add your own touch to publish: write or edit the description here, or add a photo of your version above.</p>`
             : ''
         }
       </div>
@@ -202,6 +202,7 @@ function renderForm(wrap, data, existing = null) {
     titleImg,
     source_url: data.source_url || null,
     imported_fields: Array.isArray(data.imported_fields) ? data.imported_fields : [],
+    imported_description: data.description || '',
     editingId: existing ? existing.id : null,
   };
   wireForm(wrap, formState);
@@ -355,13 +356,16 @@ function wireForm(wrap, formState) {
     // photo of their own. Hand-entered recipes (no import) and edits are exempt.
     const wasImported = !formState.editingId && formState.source_url && formState.imported_fields.length > 0;
     if (wasImported) {
-      const hasOwnDescription = recipe.description.trim().length > 0 && !formState.imported_fields.includes('description');
+      const currentDesc = recipe.description.trim();
+      const importedDesc = (formState.imported_description || '').trim();
+      // The cook's own touch via description = they wrote one the import didn't
+      // provide, OR they changed the imported one (any edit counts).
+      const hasOwnDescription = currentDesc.length > 0 && currentDesc !== importedDesc;
       const hasOwnPhoto = formState.gallery.length > 0;
       if (!hasOwnDescription && !hasOwnPhoto) {
         status.textContent =
-          'Almost there — add your own touch first: write a short description, or add a photo of your version.';
+          'Almost there — add your own touch first: write or edit the description, or add a photo of your version.';
         status.className = 'auth-status warn';
-        // Nudge focus to the description so the next step is obvious.
         wrap.querySelector('#f-desc')?.focus();
         return;
       }
