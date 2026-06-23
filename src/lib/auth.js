@@ -14,6 +14,16 @@ import { navigate } from './router.js';
 let cachedUser = null;     // decorated user object, or null
 let authReady = false;     // has the first session load completed?
 
+// Optional hook fired on a sign-in/sign-out transition, BEFORE we navigate.
+// main.js registers one to refresh the profile cache so the header shows the
+// cook's uploaded avatar immediately on first sign-in (no reload needed).
+// Kept as a callback (not a direct import) to avoid an auth ⇄ profileCache
+// circular import — profileCache.js already imports from this module.
+let onTransition = null;
+export function onAuthTransition(fn) {
+  onTransition = typeof fn === 'function' ? fn : null;
+}
+
 // Decorate a raw Supabase user with a convenient isAdmin flag.
 function decorate(user) {
   if (!user) return null;
@@ -40,7 +50,11 @@ export async function initAuth() {
     // Re-render the current route so guards/UI reflect the new state.
     // Only navigate on an actual transition to avoid redirect loops.
     if ((was === null) !== (next === null)) {
-      navigate(next ? '/home' : '/');
+      // Refresh dependent caches (e.g. the profile/avatar cache) first, THEN
+      // navigate, so the first paint after sign-in already has the avatar.
+      Promise.resolve(onTransition?.(next)).finally(() => {
+        navigate(next ? '/home' : '/');
+      });
     }
   });
 }

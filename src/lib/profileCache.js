@@ -11,13 +11,18 @@
 // header reflects it immediately, no reload needed.
 // ---------------------------------------------------------------------------
 
-import { fetchProfile } from './profiles.js';
+import { fetchProfile, ensureOwnProfile } from './profiles.js';
 import { currentUser } from './auth.js';
 
 let cachedProfile = null;
 
 // Load the signed-in user's profile into the cache. Call once at boot, after
-// initAuth(). Safe to call when signed out (no-op).
+// initAuth(), and again on each sign-in transition. Safe when signed out.
+//
+// On a brand-new cook's first sign-in the DB trigger creates their profile row,
+// but a redirect-back race can mean fetchProfile() runs a beat too early and
+// sees no row. ensureOwnProfile() closes that gap by creating the row if it's
+// missing, so the cache is always populated for a signed-in cook.
 export async function loadOwnProfile() {
   const user = currentUser();
   if (!user) {
@@ -25,7 +30,7 @@ export async function loadOwnProfile() {
     return null;
   }
   try {
-    cachedProfile = await fetchProfile(user.id);
+    cachedProfile = (await fetchProfile(user.id)) || (await ensureOwnProfile());
   } catch {
     cachedProfile = null; // header falls back to the Google photo / initial
   }

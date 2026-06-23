@@ -2,7 +2,7 @@ import './styles/tokens.css';
 import './styles/components.css';
 
 import { route, startRouter, navigate } from './lib/router.js';
-import { signOut, initAuth } from './lib/auth.js';
+import { signOut, initAuth, onAuthTransition } from './lib/auth.js';
 import { loadRecipes } from './lib/mockData.js';
 import { prefillHeaderSearch } from './components/layout.js';
 import { loadOwnProfile, clearCachedProfile } from './lib/profileCache.js';
@@ -82,6 +82,19 @@ document.addEventListener('keydown', (e) => {
 
 // Keep the search box in sync with the URL on every navigation.
 window.addEventListener('hashchange', prefillHeaderSearch);
+
+// Keep the profile/avatar cache in sync on every sign-in/sign-out transition,
+// not just at boot. On first OAuth sign-in the redirect-back fires an auth
+// change AFTER boot's loadOwnProfile() (which ran while signed out), so without
+// this the header wouldn't show the cook's uploaded avatar until a reload.
+// auth.js awaits this before navigating, so the first post-sign-in paint has it.
+onAuthTransition(async (user) => {
+  if (user) {
+    await loadOwnProfile();
+  } else {
+    clearCachedProfile();
+  }
+});
 
 // Boot: establish session + load data BEFORE first render, so the synchronous
 // isSignedIn() guards and the recipes array are accurate on the first paint.

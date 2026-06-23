@@ -32,7 +32,7 @@ export function Auth() {
         await signInWithEmail(email);
         panel.innerHTML = `
           <h2>Check your inbox</h2>
-          <p class="sub">We sent a sign-in link to <strong>${email}</strong>.</p>
+          <p class="sub">We sent a sign-in link to <strong>${esc(email)}</strong>.</p>
           <div class="inbox-state">
             <p>Open the email and tap the link to finish signing in. You can close this tab.</p>
           </div>
@@ -61,4 +61,17 @@ export function Auth() {
     </main>
     ${Footer()}
   `;
+}
+
+// Escape user input before it's injected into innerHTML (the confirmation
+// message echoes the typed email). Low risk since a cook can only feed their
+// own input back to themselves, but raw interpolation into HTML is a sink we
+// close on principle.
+function esc(v) {
+  if (v === undefined || v === null) return '';
+  return String(v)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
