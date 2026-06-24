@@ -68,7 +68,7 @@ function renderProfile(wrap, profile, isOwner) {
     </div>
     ${
       theirRecipes.length
-        ? `<div class="grid">${theirRecipes.map(RecipeCard).join('')}</div>`
+        ? `<div class="grid grid-compact">${theirRecipes.map(RecipeCard).join('')}</div>`
         : `<p class="muted">${
             isOwner
               ? 'You haven’t posted a recipe yet. <a href="#/submit">Add your first →</a>'
