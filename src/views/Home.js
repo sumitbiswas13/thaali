@@ -11,6 +11,9 @@ import { fetchLikeCounts, fetchCommentCounts } from '../lib/social.js';
 let likeCounts = new Map();
 let commentCounts = new Map();
 
+// How many recipe cards to show per page before paginating.
+const PER_PAGE = 12;
+
 // Total cooking time for a recipe, in minutes (or null if unknown).
 function totalMinutes(r) {
   const t = (r.prep_time || 0) + (r.cook_time || 0);
@@ -35,7 +38,7 @@ export function Home(params = {}) {
   const diffChips = ['All', ...DIFFICULTIES.filter((d) => usedDiffs.has(d))];
   const timeChips = ['All', ...TIME_BUCKETS.map((b) => b.label)];
 
-  const state = { cuisine: 'All', course: 'All', difficulty: 'All', time: 'All', q: initialQ };
+  const state = { cuisine: 'All', course: 'All', difficulty: 'All', time: 'All', q: initialQ, page: 1 };
 
   // Free-text match across the fields a cook would search by.
   function matchesText(r) {
@@ -58,6 +61,7 @@ export function Home(params = {}) {
   onMount(() => {
     const grid = document.getElementById('recipe-grid');
     const count = document.getElementById('result-count');
+    const pager = document.getElementById('pager');
 
     function matchesTime(r) {
       if (state.time === 'All') return true;
@@ -86,8 +90,8 @@ export function Home(params = {}) {
       });
     }
 
-    function apply() {
-      const filtered = recipes.filter(
+    function currentFiltered() {
+      return recipes.filter(
         (r) =>
           matchesText(r) &&
           (state.cuisine === 'All' || r.cuisine === state.cuisine) &&
@@ -95,14 +99,67 @@ export function Home(params = {}) {
           (state.difficulty === 'All' || r.difficulty === state.difficulty) &&
           matchesTime(r)
       );
+    }
+
+    // Render the pagination control (1 | 2 | > >>) for the given page count.
+    function renderPager(totalPages) {
+      if (totalPages <= 1) {
+        pager.innerHTML = '';
+        pager.hidden = true;
+        return;
+      }
+      pager.hidden = false;
+      const p = state.page;
+      const btn = (label, target, opts = {}) => {
+        const { disabled = false, active = false, aria } = opts;
+        return `<button class="page-btn${active ? ' is-active' : ''}"
+          data-page="${target}" ${disabled ? 'disabled' : ''}
+          ${aria ? `aria-label="${aria}"` : ''}
+          ${active ? 'aria-current="page"' : ''}>${label}</button>`;
+      };
+
+      // Windowed page numbers so the row stays compact as recipes pile up.
+      const nums = [];
+      const span = 2; // pages either side of current
+      let start = Math.max(1, p - span);
+      let end = Math.min(totalPages, p + span);
+      if (start > 1) {
+        nums.push(btn('1', 1));
+        if (start > 2) nums.push(`<span class="page-gap">…</span>`);
+      }
+      for (let i = start; i <= end; i++) nums.push(btn(String(i), i, { active: i === p }));
+      if (end < totalPages) {
+        if (end < totalPages - 1) nums.push(`<span class="page-gap">…</span>`);
+        nums.push(btn(String(totalPages), totalPages));
+      }
+
+      pager.innerHTML = `
+        ${btn('‹', p - 1, { disabled: p === 1, aria: 'Previous page' })}
+        ${nums.join('')}
+        ${btn('›', p + 1, { disabled: p === totalPages, aria: 'Next page' })}
+        ${btn('»', totalPages, { disabled: p === totalPages, aria: 'Last page' })}
+      `;
+    }
+
+    function apply() {
+      const filtered = currentFiltered();
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+      if (state.page > totalPages) state.page = totalPages;
+
+      const startIdx = (state.page - 1) * PER_PAGE;
+      const pageItems = filtered.slice(startIdx, startIdx + PER_PAGE);
+
       grid.innerHTML = filtered.length
-        ? filtered.map(RecipeCard).join('')
+        ? pageItems.map(RecipeCard).join('')
         : `<p class="muted">No recipes match these filters yet.</p>`;
+
       count.textContent = `${filtered.length} recipe${filtered.length === 1 ? '' : 's'}`;
+      renderPager(totalPages);
       paintCounts();
     }
 
-    // One delegated wiring routine for every filter group.
+    // One delegated wiring routine for every filter group. Changing a filter
+    // resets to page 1 so you're never stranded on an out-of-range page.
     function wireGroup(group, key) {
       document.querySelectorAll(`[data-group="${group}"] .chip`).forEach((chip) => {
         chip.addEventListener('click', () => {
@@ -111,6 +168,7 @@ export function Home(params = {}) {
             .forEach((c) => c.setAttribute('aria-pressed', 'false'));
           chip.setAttribute('aria-pressed', 'true');
           state[key] = chip.dataset.val;
+          state.page = 1;
           apply();
         });
       });
@@ -121,8 +179,20 @@ export function Home(params = {}) {
     wireGroup('difficulty', 'difficulty');
     wireGroup('time', 'time');
 
-    // If we arrived with a search term, filter right away.
-    if (state.q) apply();
+    // Pagination clicks (delegated — buttons are re-rendered each apply()).
+    pager.addEventListener('click', (e) => {
+      const b = e.target.closest('.page-btn');
+      if (!b || b.disabled) return;
+      const target = Number(b.dataset.page);
+      if (!target || target === state.page) return;
+      state.page = target;
+      apply();
+      // Bring the results back into view after a page change.
+      document.querySelector('.section-head')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Initial paint always runs so pagination shows even without a search term.
+    apply();
 
     // Fetch like/comment counts once, then paint badges onto whatever's shown.
     const ids = recipes.map((r) => r.id);
@@ -147,6 +217,14 @@ export function Home(params = {}) {
         .join('')}
     </div>`;
 
+  // Each filter is a labelled column; the bar lays them out left-to-right and
+  // wraps gracefully on narrow screens.
+  const filterCol = (group, label, list) =>
+    `<div class="filter-col" data-group-col="${group}">
+       <span class="filter-label">${label}</span>
+       ${chipRow(group, list)}
+     </div>`;
+
   return `
     ${Header()}
     <main class="wrap">
@@ -158,31 +236,19 @@ export function Home(params = {}) {
       ${
         recipes.length
           ? `
-        <div class="filter-block">
-          <span class="filter-label">Cuisine</span>
-          ${chipRow('cuisine', cuisineChips)}
+        <div class="filter-bar">
+          ${filterCol('cuisine', 'Cuisine', cuisineChips)}
+          ${filterCol('course', 'Course', courseChips)}
+          ${diffChips.length > 1 ? filterCol('difficulty', 'Difficulty', diffChips) : ''}
+          ${filterCol('time', 'Time', timeChips)}
         </div>
-        <div class="filter-block">
-          <span class="filter-label">Course</span>
-          ${chipRow('course', courseChips)}
-        </div>
-        ${
-          diffChips.length > 1
-            ? `<div class="filter-block">
-                 <span class="filter-label">Difficulty</span>
-                 ${chipRow('difficulty', diffChips)}
-               </div>`
-            : ''
-        }
-        <div class="filter-block">
-          <span class="filter-label">Time</span>
-          ${chipRow('time', timeChips)}
-        </div>
-        <div class="grid" id="recipe-grid">
+        <div class="grid grid-compact" id="recipe-grid">
           ${recipes.map(RecipeCard).join('')}
-        </div>`
+        </div>
+        <nav class="pager" id="pager" aria-label="Pagination" hidden></nav>`
           : `<p class="muted">No recipes yet. <a href="#/submit">Add the first →</a></p>
-             <div class="grid" id="recipe-grid" hidden></div>
+             <div class="grid grid-compact" id="recipe-grid" hidden></div>
+             <nav class="pager" id="pager" hidden></nav>
              <span id="result-count" hidden></span>`
       }
     </main>

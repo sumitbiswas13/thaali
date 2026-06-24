@@ -190,15 +190,69 @@
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--saffron); outline: none; }
 
 /* ── Browse filters ──────────────────────────────────────────────── */
-.filter-block { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+/* Horizontal filter bar: each filter is a stacked label + chip row, laid
+   out left-to-right; wraps to the next line on narrow viewports. */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: calc(var(--space) * 3);
+  margin-bottom: calc(var(--space) * 4);
+  padding-bottom: calc(var(--space) * 2);
+  border-bottom: 1px solid var(--line);
+}
+.filter-col { display: flex; flex-direction: column; gap: 8px; }
+.filter-col .chips { margin-bottom: 0; }
 .filter-label {
   font-family: var(--font-mono);
   font-size: .72rem;
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  flex: 0 0 64px;
 }
+
+/* Legacy vertical block (kept for any other view that still uses it). */
+.filter-block { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.filter-block .filter-label { flex: 0 0 64px; }
+
+/* Compact card grid — ~25% smaller cards so a denser page fits more. */
+.grid-compact { grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); }
+.grid-compact .card-body { padding: calc(var(--space) * 1.6); }
+.grid-compact .card-body h3 { font-size: 1rem; }
+.grid-compact .card-meta { font-size: 0.74rem; gap: 10px; }
+.grid-compact .byline { font-size: 0.78rem; margin-top: 8px; }
+.grid-compact .platter { width: 72px; height: 72px; }
+
+/* ── Pagination ──────────────────────────────────────────────────── */
+.pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: calc(var(--space) * 5) 0 calc(var(--space) * 2);
+  flex-wrap: wrap;
+}
+.page-btn {
+  min-width: 38px;
+  padding: 8px 12px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--line-strong);
+  background: var(--paper-raised);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--saffron); }
+.page-btn.is-active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-weight: 600;
+}
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+.page-gap { padding: 0 4px; color: var(--ink-soft); }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 
 /* ── Header avatar ───────────────────────────────────────────────── */
