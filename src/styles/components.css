@@ -439,7 +439,33 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
   color: var(--ink-soft);
   font-size: 0.9rem;
 }
-.site-footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.site-footer .wrap { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 24px; }
+
+/* ── Footer (brand left · links + copyright right) ─────────────────── */
+.footer-mark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.footer-mark .dot { color: var(--saffron); }
+.footer-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.02rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  max-width: 32ch;
+}
+.footer-right { text-align: right; }
+.footer-copy {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--cumin);
+  margin-top: 14px;
+}
 
 /* ── Responsive ───────────────────────────────────── */
 @media (max-width: 720px) {
@@ -451,6 +477,8 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
   .brand-icon { width: 44px; height: 44px; }
   .brand-slogan { font-size: 0.62rem; letter-spacing: 0.14em; }
   .brand { gap: 10px; }
+  .footer-right { text-align: left; }
+  .footer-links { justify-content: flex-start; }
 }
 
 /* ===========================================================================
@@ -719,7 +747,7 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 .news-credit a:hover { color: var(--paprika); }
 
 /* --- Footer links --------------------------------------------------------- */
-.footer-links { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+.footer-links { display: flex; gap: 22px; justify-content: flex-end; align-items: baseline; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.02em; text-transform: uppercase; }
 .footer-links a { color: var(--saffron); font-weight: 600; }
 .footer-links a:hover { color: var(--paprika); }
 

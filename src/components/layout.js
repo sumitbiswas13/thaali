@@ -87,13 +87,18 @@ export function Footer() {
   return `
     <footer class="site-footer">
       <div class="wrap">
-        <span>Thaali — by cooks, for everyone. No ads, no paywall, ever.</span>
-        <span class="footer-links">
-          <a href="#/contact">Contact &amp; support</a>
-          <a href="#/privacy">Privacy</a>
-          <a href="#/terms">Terms</a>
-          <span>© ${new Date().getFullYear()} · thaali.app</span>
-        </span>
+        <div class="footer-brand">
+          <div class="footer-mark">Thaali<span class="dot">.</span></div>
+          <p class="footer-tagline">By cooks, for everyone.<br>No ads, no paywall, ever.</p>
+        </div>
+        <div class="footer-right">
+          <nav class="footer-links" aria-label="Footer">
+            <a href="#/contact">Contact</a>
+            <a href="#/privacy">Privacy</a>
+            <a href="#/terms">Terms</a>
+          </nav>
+          <p class="footer-copy">© ${new Date().getFullYear()} · thaali.app</p>
+        </div>
       </div>
     </footer>
   `;
