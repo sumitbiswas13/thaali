@@ -1,5 +1,6 @@
 import { Header, Footer } from '../components/layout.js';
 import { RecipeCard } from '../components/RecipeCard.js';
+import { TrendingStrip, mountTrending } from '../components/Trending.js';
 import { recipes } from '../lib/mockData.js';
 import { onMount, navigate as go } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
@@ -229,6 +230,9 @@ export function Home(params = {}) {
       .catch(() => {
         /* counts are non-critical; leave badges hidden on failure */
       });
+
+    // Trending strip (skipped on search-result views).
+    if (!initialQ) mountTrending('trending-browse');
   });
 
   const chipRow = (group, list) =>
@@ -252,6 +256,7 @@ export function Home(params = {}) {
   return `
     ${Header()}
     <main class="wrap">
+      ${initialQ ? '' : TrendingStrip('trending-browse', true)}
       <div class="section-head">
         <h2>${initialQ ? `Results for “${initialQ.replace(/</g, '&lt;')}”` : 'All recipes'}</h2>
         <span class="muted" id="result-count">${recipes.length} recipe${recipes.length === 1 ? '' : 's'}</span>

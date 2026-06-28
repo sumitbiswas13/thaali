@@ -1123,3 +1123,19 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 .legal-page a:hover { color: var(--brick-deep); }
 .legal-list { margin: 12px 0 12px 22px; }
 .legal-list li { margin: 8px 0; }
+
+/* ── Trending strip (Landing + Browse) ────────────── */
+/* A featured row of the most-engaged recipes. Hidden by default; revealed by
+   mountTrending() only when there's enough to show. Subtle saffron eyebrow
+   on the heading distinguishes it from the regular grids around it. */
+.trending-section { margin-top: 8px; margin-bottom: 8px; }
+.trending-section .section-head h2 {
+  position: relative;
+}
+.trending-section .section-head h2::before {
+  content: '🔥';
+  font-size: 0.7em;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.trending-grid { margin-top: 4px; }

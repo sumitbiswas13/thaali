@@ -1,5 +1,7 @@
 import { Header, Footer } from '../components/layout.js';
 import { RecipeCard } from '../components/RecipeCard.js';
+import { TrendingStrip, mountTrending } from '../components/Trending.js';
+import { onMount } from '../lib/router.js';
 import {
   seedRecipes,
   seedCooks,
@@ -34,6 +36,8 @@ export function Landing() {
   const cuisineSource = live.length ? live : seedRecipes;
   const statCuisines = new Set(cuisineSource.map((r) => r.cuisine).filter(Boolean)).size;
 
+  onMount(() => mountTrending('trending-landing'));
+
   return `
     ${Header()}
     <main>
@@ -58,6 +62,8 @@ export function Landing() {
           <p class="promise">No ads · No paywall · No data-selling · Forever</p>
         </div>
       </section>
+
+      ${TrendingStrip('trending-landing')}
 
       <section class="wrap">
         <div class="section-head"><h2>Fresh from the kitchen</h2></div>
