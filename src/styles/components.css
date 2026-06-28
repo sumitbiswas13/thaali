@@ -1292,10 +1292,13 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 }
 
 /* Stack on mobile — image below the text, full width at its natural ratio
-   (no max-height, which was clipping the banner to a sliver). */
+   (no max-height, which was clipping the banner to a sliver). The banner is
+   flex: 1 1 0 for the desktop two-column row; in the mobile column that zero
+   basis collapses its height, so reset it to size from the image. */
 @media (max-width: 860px) {
   .hero-split .hero-inner { flex-direction: column; gap: calc(var(--space) * 4); }
   .hero-split .hero-text { max-width: none; }
+  .hero-split .hero-banner { flex: none; width: 100%; }
 }
 
 /* --- Admin banner panel (2026-06-28) ------------------------------------- */
