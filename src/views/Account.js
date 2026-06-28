@@ -1,6 +1,6 @@
 import { Header, Footer } from '../components/layout.js';
 import { onMount, navigate } from '../lib/router.js';
-import { isSignedIn, currentUser } from '../lib/auth.js';
+import { isSignedIn, currentUser, changeEmail } from '../lib/auth.js';
 import { ensureOwnProfile } from '../lib/profiles.js';
 import { countryName } from '../lib/categories.js';
 import { recipes } from '../lib/mockData.js';
@@ -62,6 +62,11 @@ function renderAccount(wrap, profile, pending) {
       <a class="btn btn-ghost" href="#/profile">Edit profile</a>
     </section>
 
+    <section class="account-card">
+      <h3>Email</h3>
+      <div id="email-region"></div>
+    </section>
+
     <section class="account-card danger-zone">
       <h3>Delete account</h3>
       <div id="deletion-region"></div>
@@ -74,6 +79,92 @@ function renderAccount(wrap, profile, pending) {
   } else {
     renderDeleteStart(region, mine.length);
   }
+
+  renderEmailRegion(wrap.querySelector('#email-region'), me);
+}
+
+// --- Change email ----------------------------------------------------------
+// Only magic-link/email users can change their address here. Google users sign
+// in through Google, so their email is managed there — we explain that rather
+// than offer a control that can't work.
+function renderEmailRegion(region, me) {
+  if (!region) return;
+  const current = me.email || '—';
+  const isGoogle = me.provider === 'google';
+
+  if (isGoogle) {
+    region.innerHTML = `
+      <p class="muted">You’re signed in with Google, so your email
+      (<strong>${esc(current)}</strong>) is managed by your Google account.
+      To use a different address, sign in with that email via a magic link instead.</p>
+    `;
+    return;
+  }
+
+  region.innerHTML = `
+    <p class="muted">Your sign-in email is <strong>${esc(current)}</strong>.
+      Changing it sends a confirmation link to the new address — your email
+      updates only after you click that link.</p>
+    <button class="btn btn-ghost" data-action="start-email">Change email</button>
+    <div id="email-form" hidden></div>
+  `;
+
+  region.querySelector('[data-action="start-email"]')?.addEventListener('click', () => {
+    // Hide via inline style, not the `hidden` attribute (same reason as the
+    // deletion trigger: `.btn { display: inline-flex }` overrides the attr).
+    const trigger = region.querySelector('[data-action="start-email"]');
+    if (trigger) trigger.style.display = 'none';
+    renderEmailForm(region.querySelector('#email-form'));
+  });
+}
+
+function renderEmailForm(box) {
+  box.hidden = false;
+  box.innerHTML = `
+    <div class="field" style="margin-top:12px;max-width:380px;">
+      <label>New email address</label>
+      <input type="email" id="new-email" autocomplete="email" placeholder="you@example.com" />
+    </div>
+    <p class="import-msg" id="email-msg"></p>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn btn-primary" data-action="submit-email">Send confirmation</button>
+      <button class="btn btn-ghost" data-action="cancel-email">Cancel</button>
+    </div>
+  `;
+
+  const input = box.querySelector('#new-email');
+  const msg = box.querySelector('#email-msg');
+  const submit = box.querySelector('[data-action="submit-email"]');
+
+  box.querySelector('[data-action="cancel-email"]')?.addEventListener('click', () => {
+    const region = box.closest('#email-region');
+    renderEmailRegion(region, currentUser());
+  });
+
+  submit?.addEventListener('click', async () => {
+    const next = input.value.trim();
+    msg.className = 'import-msg';
+    if (!next) {
+      msg.textContent = 'Please enter a new email address.';
+      msg.classList.add('warn');
+      input.focus();
+      return;
+    }
+    submit.disabled = true;
+    const original = submit.textContent;
+    submit.textContent = 'Sending…';
+    try {
+      await changeEmail(next);
+      box.innerHTML = `<p class="import-msg ok">Almost done — we’ve sent a confirmation
+        link to <strong>${esc(next)}</strong>. Click it from that inbox to finish the
+        change. Until then, keep signing in with your current email.</p>`;
+    } catch (err) {
+      msg.textContent = err.message || 'Could not change email.';
+      msg.classList.add('warn');
+      submit.disabled = false;
+      submit.textContent = original;
+    }
+  });
 }
 
 // --- Pending state: grayed-out, with cancel-by-email instructions ----------

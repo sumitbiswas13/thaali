@@ -28,7 +28,11 @@ export function onAuthTransition(fn) {
 function decorate(user) {
   if (!user) return null;
   const role = user.app_metadata?.role || user.user_metadata?.role || null;
-  return { ...user, isAdmin: role === 'admin' };
+  // Primary sign-in provider: 'email' (magic link), 'google', etc. Used to
+  // decide whether the "change email" control applies (email/magic-link only —
+  // a Google user's address is managed by Google, not Thaali).
+  const provider = user.app_metadata?.provider || null;
+  return { ...user, isAdmin: role === 'admin', provider };
 }
 
 // Call once at boot, before startRouter(). Loads the current session and
@@ -93,6 +97,29 @@ export async function signInWithEmail(email) {
     email,
     options: { emailRedirectTo: `${window.location.origin}/` },
   });
+  if (error) throw error;
+  return { sent: true };
+}
+
+// ---- Change email (magic-link/email users) --------------------------------
+// Supabase sends a confirmation link to the NEW address; the email only
+// actually changes once that link is clicked. (Depending on project settings,
+// a notice also goes to the old address.) So the verification/security is
+// handled by Supabase — we just kick it off and tell the user to check their
+// new inbox. The confirmation link returns the user to the app via the
+// standard auth redirect, and onAuthStateChange refreshes the cached user.
+export async function changeEmail(newEmail) {
+  if (!isSupabaseReady()) throw new Error('Supabase is not configured.');
+  const email = (newEmail || '').trim();
+  if (!email) throw new Error('Please enter a new email address.');
+  const me = currentUser();
+  if (me && email.toLowerCase() === (me.email || '').toLowerCase()) {
+    throw new Error('That’s already your email address.');
+  }
+  const { error } = await supabase.auth.updateUser(
+    { email },
+    { emailRedirectTo: `${window.location.origin}/` }
+  );
   if (error) throw error;
   return { sent: true };
 }
