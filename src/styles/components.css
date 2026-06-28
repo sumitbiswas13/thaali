@@ -437,6 +437,36 @@
 .ing-list { list-style: none; }
 .ing-list li { padding: 10px 0; border-bottom: 1px solid var(--line); display: flex; gap: 8px; }
 .ing-list .amt { font-family: var(--font-mono); color: var(--ink-soft); min-width: 70px; }
+/* Simple-mode ingredients: one free-text block, no per-row divider. */
+.ing-list li.ing-raw { display: block; border-bottom: none; padding: 4px 0; line-height: 1.7; white-space: normal; }
+
+/* ── Ingredient entry mode toggle (Submit/Edit) ───── */
+.ing-mode-toggle { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.ing-mode-btn {
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--line-strong);
+  font-size: 0.82rem;
+  background: var(--paper-raised);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ing-mode-btn:hover { border-color: var(--saffron); }
+.ing-mode-btn[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.ing-mode-hint { font-size: 0.78rem; flex-basis: 100%; }
+#f-ing-simple {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  background: var(--paper);
+  field-sizing: content;
+  min-height: 7em;
+  resize: vertical;
+}
+#f-ing-simple:focus { border-color: var(--saffron); outline: none; }
 .method-list { list-style: none; counter-reset: step; }
 .method-list li { counter-increment: step; padding: 14px 0 14px 44px; position: relative; border-bottom: 1px solid var(--line); }
 .method-list li::before {

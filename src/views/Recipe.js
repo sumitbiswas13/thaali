@@ -56,7 +56,14 @@ export function Recipe(params) {
     return '';
   }
 
-  const ingredients = r.ingredients?.length
+  // Ingredients render in one of two shapes:
+  //   Simple  → a single { raw } entry, shown as a free-text block.
+  //   Detailed → [{ quantity, unit, item }], shown as a structured list.
+  const isSimpleIng =
+    r.ingredients?.length === 1 && typeof r.ingredients[0]?.raw === 'string';
+  const ingredients = isSimpleIng
+    ? `<li class="ing-raw">${fmt(r.ingredients[0].raw)}</li>`
+    : r.ingredients?.length
     ? r.ingredients
         .map(
           (i) =>

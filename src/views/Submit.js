@@ -186,11 +186,23 @@ function renderForm(wrap, data, existing = null) {
       </div>
 
       <h3 style="margin:24px 0 12px;">Ingredients</h3>
-      <div id="ingredients">
-        ${(data.ingredients || []).map(ingRow).join('')}
-        ${(data.ingredients || []).length === 0 ? ingRow({}) : ''}
+      <div class="ing-mode-toggle" role="tablist" aria-label="Ingredient entry mode">
+        <button type="button" class="ing-mode-btn" data-mode="detailed" aria-pressed="${!isSimpleIng(data.ingredients)}">Detailed</button>
+        <button type="button" class="ing-mode-btn" data-mode="simple" aria-pressed="${isSimpleIng(data.ingredients)}">Simple</button>
+        <span class="muted ing-mode-hint">Detailed = amount · unit · item rows. Simple = one free-text box.</span>
       </div>
-      <button class="add-row" data-add="ingredient">+ add ingredient</button>
+
+      <div id="ing-detailed" ${isSimpleIng(data.ingredients) ? 'hidden' : ''}>
+        <div id="ingredients">
+          ${(isSimpleIng(data.ingredients) ? [] : data.ingredients || []).map(ingRow).join('')}
+          ${(isSimpleIng(data.ingredients) ? [] : data.ingredients || []).length === 0 ? ingRow({}) : ''}
+        </div>
+        <button class="add-row" data-add="ingredient">+ add ingredient</button>
+      </div>
+
+      <div id="ing-simple" ${isSimpleIng(data.ingredients) ? '' : 'hidden'}>
+        <textarea id="f-ing-simple" rows="6" placeholder="Type your ingredients however you like — one per line, or freeform.&#10;&#10;e.g.&#10;2 cups flour&#10;1 tsp salt&#10;3 eggs">${esc(simpleIngText(data.ingredients))}</textarea>
+      </div>
 
       <h3 style="margin:24px 0 12px;">Method</h3>
       <div id="steps">
@@ -215,6 +227,16 @@ function renderForm(wrap, data, existing = null) {
     editingId: existing ? existing.id : null,
   };
   wireForm(wrap, formState);
+}
+
+// Simple-mode ingredients are stored as a single { raw: "...text..." } entry.
+// Detailed-mode are [{ quantity, unit, item }]. These two helpers let the form
+// figure out which mode an existing recipe is in, and pull the raw text out.
+function isSimpleIng(ingredients) {
+  return Array.isArray(ingredients) && ingredients.length === 1 && typeof ingredients[0]?.raw === 'string';
+}
+function simpleIngText(ingredients) {
+  return isSimpleIng(ingredients) ? ingredients[0].raw : '';
 }
 
 function ingRow(ing = {}) {
@@ -245,6 +267,44 @@ function stepRow(step = {}, i = 0) {
 }
 
 function wireForm(wrap, formState) {
+  // --- ingredient entry mode toggle (Detailed ↔ Simple) ---
+  // Switching does NOT migrate content between the two shapes (deliberately —
+  // keeps the code simple). If the mode being left has any content, warn first
+  // so the cook can copy it out before it's discarded on the next save.
+  const ingToggle = wrap.querySelector('.ing-mode-toggle');
+  ingToggle?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.ing-mode-btn');
+    if (!btn) return;
+    const target = btn.dataset.mode; // 'simple' | 'detailed'
+    const current = wrap.querySelector('.ing-mode-btn[aria-pressed="true"]')?.dataset.mode;
+    if (target === current) return;
+
+    // Does the mode we're leaving hold anything the switch would strand?
+    let leaving = '';
+    if (current === 'simple') {
+      leaving = wrap.querySelector('#f-ing-simple')?.value.trim() || '';
+    } else {
+      leaving = [...wrap.querySelectorAll('.ingredient-row [data-f="item"]')]
+        .map((i) => i.value.trim())
+        .filter(Boolean)
+        .join('');
+    }
+    if (leaving) {
+      const ok = window.confirm(
+        'Switching ingredient mode won’t carry your current ingredients over — ' +
+          'they’ll be lost when you save. Copy them somewhere first if you need them.\n\nSwitch anyway?'
+      );
+      if (!ok) return;
+    }
+
+    // Flip pressed state + visibility.
+    wrap.querySelectorAll('.ing-mode-btn').forEach((b) =>
+      b.setAttribute('aria-pressed', b.dataset.mode === target ? 'true' : 'false')
+    );
+    wrap.querySelector('#ing-detailed').hidden = target !== 'detailed';
+    wrap.querySelector('#ing-simple').hidden = target !== 'simple';
+  });
+
   // --- dietary tag chips (multi-select toggle) ---
   wrap.querySelector('#f-diet')?.addEventListener('click', (e) => {
     const chip = e.target.closest('.diet-chip');
@@ -428,13 +488,23 @@ function collect(wrap, formState) {
     return v === '' ? null : Number(v);
   };
 
-  const ingredients = [...wrap.querySelectorAll('.ingredient-row')]
-    .map((row) => ({
-      quantity: row.querySelector('[data-f="quantity"]').value.trim(),
-      unit: row.querySelector('[data-f="unit"]').value.trim(),
-      item: row.querySelector('[data-f="item"]').value.trim(),
-    }))
-    .filter((i) => i.item);
+  // Read ingredients from whichever mode is active. Simple mode → a single
+  // { raw } entry; Detailed → the structured rows.
+  const simpleMode =
+    wrap.querySelector('.ing-mode-btn[aria-pressed="true"]')?.dataset.mode === 'simple';
+  let ingredients;
+  if (simpleMode) {
+    const raw = (wrap.querySelector('#f-ing-simple')?.value || '').trim();
+    ingredients = raw ? [{ raw }] : [];
+  } else {
+    ingredients = [...wrap.querySelectorAll('.ingredient-row')]
+      .map((row) => ({
+        quantity: row.querySelector('[data-f="quantity"]').value.trim(),
+        unit: row.querySelector('[data-f="unit"]').value.trim(),
+        item: row.querySelector('[data-f="item"]').value.trim(),
+      }))
+      .filter((i) => i.item);
+  }
 
   const steps = [...wrap.querySelectorAll('.step-row')]
     .map((row) => {
