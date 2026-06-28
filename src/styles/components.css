@@ -1310,3 +1310,14 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 .banner-field-narrow { flex: 0 0 100px; }
 .banner-card .banner-thumb { width: 100%; max-width: 320px; border-radius: var(--radius); border: 1px solid var(--line); margin: 8px 0; display: block; }
 @media (max-width: 720px) { .banner-row { flex-direction: column; } .banner-field-narrow { flex: 1 1 auto; } }
+
+/* --- Footer mobile alignment fix (2026-06-28) ----------------------------
+   The ≤720px rules earlier in the file set .footer-links to flex-start, but a
+   later unconditional `.footer-links { justify-content: flex-end }` overrides
+   them by source order. This block sits at the END of the file so it wins, and
+   left-aligns the whole right-hand footer column when the layout stacks. */
+@media (max-width: 720px) {
+  .site-footer .wrap { flex-direction: column; align-items: flex-start; }
+  .footer-right { text-align: left; align-self: stretch; }
+  .footer-links { justify-content: flex-start; }
+}
