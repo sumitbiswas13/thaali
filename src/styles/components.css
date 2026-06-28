@@ -1184,3 +1184,111 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 /* Contact page sits under a smaller h2 (vs the h1 on Privacy/Terms), so the
    shared lede runs oversized there — scale it down ~20% on Contact only. */
 #contact-panel .lede-serif { font-size: clamp(1rem, 1.92vw, 1.2rem); }
+
+/* ===========================================================================
+   Hero banner (2026-06-28): image-right hero. When an occasion banner or an
+   auto "dish of the week" is active, the hero becomes two columns — text left,
+   image right, image height tracking the text block. With no banner the hero
+   is unchanged (.hero-text is a transparent passthrough; .hero-inner keeps its
+   720px cap). All built from existing tokens.
+   =========================================================================== */
+
+/* Split layout only kicks in when .hero-split is present (banner active). */
+.hero-split .hero-inner {
+  max-width: var(--maxw);
+  display: flex;
+  align-items: stretch;
+  gap: calc(var(--space) * 6);
+}
+.hero-split .hero-text {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.hero-split .hero-text .lede { max-width: 52ch; }
+
+/* The image column: matches the text column height, image sits whole inside a
+   padded frame (object-fit: contain) so nothing is cropped. */
+.hero-banner {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--space) * 2);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+.hero-banner-img {
+  width: 100%;
+  height: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  border-radius: calc(var(--radius) - 6px);
+  display: block;
+}
+.hero-banner-link { display: block; width: 100%; }
+.hero-banner-link .hero-banner-img { max-height: 420px; }
+
+/* Dish-of-the-week fallback: same frame, plus a tag + caption. */
+.hero-banner-dish { position: relative; gap: 12px; transition: border-color .15s ease; }
+.hero-banner-dish:hover { border-color: var(--line-strong); }
+.hero-banner-dish .hero-banner-img { object-fit: cover; aspect-ratio: 16 / 10; }
+.hero-banner-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: calc(var(--radius) - 6px);
+  background: linear-gradient(135deg, var(--turmeric), var(--saffron));
+  position: relative;
+  overflow: hidden;
+}
+.hero-banner-tag {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--saffron);
+}
+.hero-banner-caption {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hero-banner-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.hero-banner-by {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+/* Stack on mobile — image below the text, full width. */
+@media (max-width: 860px) {
+  .hero-split .hero-inner { flex-direction: column; gap: calc(var(--space) * 4); }
+  .hero-split .hero-text { max-width: none; }
+  .hero-banner-img { max-height: 320px; }
+}
+
+/* --- Admin banner panel (2026-06-28) ------------------------------------- */
+.banner-form { display: flex; flex-direction: column; gap: 14px; margin: 18px 0 24px; max-width: 560px; }
+.banner-field { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); }
+.banner-field input { font-family: var(--font-body); font-size: 0.95rem; text-transform: none; letter-spacing: 0; }
+.banner-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.banner-row .banner-field { flex: 1 1 160px; }
+.banner-field-narrow { flex: 0 0 100px; }
+.banner-card .banner-thumb { width: 100%; max-width: 320px; border-radius: var(--radius); border: 1px solid var(--line); margin: 8px 0; display: block; }
+@media (max-width: 720px) { .banner-row { flex-direction: column; } .banner-field-narrow { flex: 1 1 auto; } }

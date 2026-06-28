@@ -8,6 +8,13 @@ import {
   fetchDeletionRequests,
   actionDeletion,
 } from '../lib/admin.js';
+import {
+  fetchAllBanners,
+  uploadBannerImage,
+  createBanner,
+  setBannerActive,
+  deleteBanner,
+} from '../lib/banner.js';
 
 // Route: #/admin → moderation queue (reports + deletion requests). Admin-only;
 // non-admins are bounced to home. The destructive deletion action re-checks
@@ -37,6 +44,13 @@ export function Admin() {
   onMount(() => {
     loadReports(state);
     loadDeletions(state);
+    loadBanners();
+
+    // Banner upload form (its own submit handler — not a data-act button).
+    document.getElementById('banner-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await submitBanner(e.currentTarget);
+    });
 
     // Delegated handlers for both panels.
     document.getElementById('admin-body')?.addEventListener('click', async (e) => {
@@ -102,6 +116,31 @@ export function Admin() {
         }
         return;
       }
+      // Banner: flip active on/off
+      if (act === 'banner-toggle') {
+        btn.disabled = true;
+        try {
+          await setBannerActive(btn.dataset.id, btn.dataset.active !== 'true');
+          loadBanners();
+        } catch (err) {
+          flash(btn, err.message);
+          btn.disabled = false;
+        }
+        return;
+      }
+      // Banner: delete the row
+      if (act === 'banner-delete') {
+        if (!confirm('Delete this banner? This cannot be undone (the image file is left in storage).')) return;
+        btn.disabled = true;
+        try {
+          await deleteBanner(btn.dataset.id);
+          loadBanners();
+        } catch (err) {
+          flash(btn, err.message);
+          btn.disabled = false;
+        }
+        return;
+      }
     });
   });
 
@@ -133,6 +172,49 @@ export function Admin() {
             ['all', 'All'],
           ])}
           <div id="deletions-list"><p class="muted">Loading…</p></div>
+        </section>
+
+        <section class="admin-panel">
+          <h3>Home banner</h3>
+          <p class="muted">
+            Upload an occasion image for the home hero. It shows while active and
+            within its date window (leave dates blank for "always"). Highest
+            priority wins if more than one is live. With none active, the hero
+            auto-shows the top dish of the week.
+          </p>
+          <form id="banner-form" class="banner-form">
+            <label class="banner-field">
+              <span>Image</span>
+              <input type="file" name="image" accept="image/*" required />
+            </label>
+            <label class="banner-field">
+              <span>Alt text / caption</span>
+              <input type="text" name="alt" placeholder="Happy National Foodie Day" required />
+            </label>
+            <label class="banner-field">
+              <span>Link URL (optional)</span>
+              <input type="url" name="link_url" placeholder="https://…" />
+            </label>
+            <div class="banner-row">
+              <label class="banner-field">
+                <span>Starts (optional)</span>
+                <input type="datetime-local" name="starts_at" />
+              </label>
+              <label class="banner-field">
+                <span>Ends (optional)</span>
+                <input type="datetime-local" name="ends_at" />
+              </label>
+              <label class="banner-field banner-field-narrow">
+                <span>Priority</span>
+                <input type="number" name="priority" value="0" step="1" />
+              </label>
+            </div>
+            <div class="admin-actions">
+              <button type="submit" class="btn btn-primary btn-sm">Upload banner</button>
+              <span id="banner-msg" class="import-msg" hidden></span>
+            </div>
+          </form>
+          <div id="banners-list"><p class="muted">Loading…</p></div>
         </section>
       </div>
     </main>
@@ -169,6 +251,88 @@ async function loadDeletions(state) {
   } catch (err) {
     list.innerHTML = `<p class="import-msg warn">Could not load requests: ${esc(err.message)}</p>`;
   }
+}
+
+// --- banners ---------------------------------------------------------------
+
+async function loadBanners() {
+  const list = document.getElementById('banners-list');
+  if (!list) return;
+  try {
+    const rows = await fetchAllBanners();
+    list.innerHTML = rows.length
+      ? rows.map(bannerCard).join('')
+      : '<p class="muted">No banners yet.</p>';
+  } catch (err) {
+    list.innerHTML = `<p class="import-msg warn">Could not load banners: ${esc(err.message)}</p>`;
+  }
+}
+
+async function submitBanner(form) {
+  const msg = document.getElementById('banner-msg');
+  const btn = form.querySelector('button[type="submit"]');
+  const file = form.image.files[0];
+  if (!file) return;
+
+  const show = (text, warn) => {
+    if (!msg) return;
+    msg.textContent = text;
+    msg.hidden = false;
+    msg.classList.toggle('warn', Boolean(warn));
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Uploading…';
+  show('Uploading image…', false);
+  try {
+    const image_url = await uploadBannerImage(file);
+    const toIso = (v) => (v ? new Date(v).toISOString() : null);
+    await createBanner({
+      image_url,
+      alt: form.alt.value.trim(),
+      link_url: form.link_url.value.trim() || null,
+      starts_at: toIso(form.starts_at.value),
+      ends_at: toIso(form.ends_at.value),
+      priority: parseInt(form.priority.value, 10) || 0,
+      active: true,
+    });
+    form.reset();
+    show('Banner uploaded. It will appear on the home page on next load.', false);
+    loadBanners();
+  } catch (err) {
+    show(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Upload banner';
+  }
+}
+
+function bannerCard(b) {
+  const window =
+    b.starts_at || b.ends_at
+      ? `${b.starts_at ? new Date(b.starts_at).toLocaleDateString() : '—'} → ${
+          b.ends_at ? new Date(b.ends_at).toLocaleDateString() : '—'
+        }`
+      : 'Always';
+  const statusBadge = `<span class="admin-badge admin-${b.active ? 'reviewed' : 'dismissed'}">${
+    b.active ? 'active' : 'off'
+  }</span>`;
+  return `
+    <article class="admin-card banner-card">
+      <div class="admin-card-head">
+        <span class="admin-reason">${esc(b.alt || '(no caption)')}</span>
+        ${statusBadge}
+      </div>
+      <img class="banner-thumb" src="${esc(b.image_url)}" alt="${esc(b.alt)}" />
+      <p class="admin-meta">Window: ${esc(window)} · Priority ${esc(String(b.priority))}</p>
+      ${b.link_url ? `<p class="admin-meta">Links to: ${esc(b.link_url)}</p>` : ''}
+      <div class="admin-actions">
+        <button class="btn btn-ghost btn-sm" data-act="banner-toggle" data-id="${esc(b.id)}" data-active="${b.active}">
+          ${b.active ? 'Turn off' : 'Turn on'}
+        </button>
+        <button class="btn btn-ghost btn-sm" data-act="banner-delete" data-id="${esc(b.id)}">Delete</button>
+      </div>
+    </article>`;
 }
 
 // --- card renderers --------------------------------------------------------

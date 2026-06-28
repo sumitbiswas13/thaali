@@ -4,6 +4,7 @@ import './styles/components.css';
 import { route, startRouter, navigate } from './lib/router.js';
 import { signOut, initAuth, onAuthTransition } from './lib/auth.js';
 import { loadRecipes } from './lib/mockData.js';
+import { loadBanner } from './lib/banner.js';
 import { prefillHeaderSearch } from './components/layout.js';
 import { loadOwnProfile, clearCachedProfile } from './lib/profileCache.js';
 import { Landing } from './views/Landing.js';
@@ -107,6 +108,7 @@ onAuthTransition(async (user) => {
 (async () => {
   await initAuth();
   await loadRecipes();
+  await loadBanner();
   await loadOwnProfile();
   startRouter();
   prefillHeaderSearch();
