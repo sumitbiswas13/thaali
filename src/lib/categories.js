@@ -65,6 +65,24 @@ export const DIET_TAGS = [
 export const DIET_ALLERGEN_TAGS = ['Gluten-Free', 'Nut-Free', 'Dairy-Free', 'Soy-Free'];
 
 // ---------------------------------------------------------------------------
+// Method step "starters" — optional one-tap openers shown under the Method
+// section of the Submit/Edit form. Purely a writing aid: clicking one inserts
+// the opener text into whichever step the cook is currently writing. Nothing
+// is ever auto-filled, overwritten, or required — cooks who prefer to write
+// freehand simply ignore the row. Keep this list short and cuisine-neutral.
+// ---------------------------------------------------------------------------
+export const STEP_STARTERS = [
+  'Heat',
+  'Add',
+  'Stir in',
+  'Cook until',
+  'Simmer until',
+  'Season with',
+  'Remove from heat',
+  'Set aside',
+];
+
+// ---------------------------------------------------------------------------
 // Total-time filter buckets for the Browse page.
 // `match(totalMinutes)` returns true if a recipe falls in the bucket.
 // `All` has no match fn (it is the default "no filter" chip).

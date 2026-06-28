@@ -3,7 +3,7 @@ import { onMount, navigate } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
 import { loadRecipes, findRecipe } from '../lib/mockData.js';
 import { createRecipe, updateRecipe, uploadRecipeImage, canEdit } from '../lib/recipes.js';
-import { CUISINES, COURSES, DIFFICULTIES, DIET_TAGS } from '../lib/categories.js';
+import { CUISINES, COURSES, DIFFICULTIES, DIET_TAGS, STEP_STARTERS } from '../lib/categories.js';
 
 const MAX_IMAGES = 4;
 
@@ -156,7 +156,7 @@ function renderForm(wrap, data, existing = null) {
       </div>
       <div class="field">
         <label>Description</label>
-        <textarea id="f-desc" rows="2" placeholder="A line about this dish">${esc(data.description)}</textarea>
+        <textarea id="f-desc" rows="2" autocapitalize="sentences" spellcheck="true" placeholder="A line about this dish">${esc(data.description)}</textarea>
         ${
           data.source_url && (data.imported_fields || []).length
             ? `<p class="import-help muted" style="margin-top:6px;">This one was imported — add your own touch to publish: write or edit the description here, or add a photo of your version above.</p>`
@@ -201,10 +201,16 @@ function renderForm(wrap, data, existing = null) {
       </div>
 
       <div id="ing-simple" ${isSimpleIng(data.ingredients) ? '' : 'hidden'}>
-        <textarea id="f-ing-simple" rows="6" placeholder="Type your ingredients however you like — one per line, or freeform.&#10;&#10;e.g.&#10;2 cups flour&#10;1 tsp salt&#10;3 eggs">${esc(simpleIngText(data.ingredients))}</textarea>
+        <textarea id="f-ing-simple" rows="6" autocapitalize="sentences" spellcheck="true" placeholder="Type your ingredients however you like — one per line, or freeform.&#10;&#10;e.g.&#10;2 cups flour&#10;1 tsp salt&#10;3 eggs">${esc(simpleIngText(data.ingredients))}</textarea>
       </div>
 
       <h3 style="margin:24px 0 12px;">Method</h3>
+      <div class="step-starters" id="step-starters" aria-label="Step openers — optional">
+        <span class="step-starters-hint muted">Quick starters (optional):</span>
+        ${STEP_STARTERS.map(
+          (s) => `<button type="button" class="starter-chip" data-starter="${esc(s)}">${esc(s)}</button>`
+        ).join('')}
+      </div>
       <div id="steps">
         ${(data.steps || []).map((s, i) => stepRow(s, i)).join('')}
         ${(data.steps || []).length === 0 ? stepRow({}, 0) : ''}
@@ -255,7 +261,7 @@ function stepRow(step = {}, i = 0) {
     <div class="step-row">
       <div class="step-num">${i + 1}</div>
       <div class="step-fields">
-        <textarea rows="2" placeholder="Describe this step" data-f="instruction">${esc(step.instruction)}</textarea>
+        <textarea rows="2" autocapitalize="sentences" spellcheck="true" placeholder="Describe this step" data-f="instruction">${esc(step.instruction)}</textarea>
         <label class="step-timer">
           <span class="muted">timer</span>
           <input type="number" min="0" value="${mins}" placeholder="0" aria-label="timer minutes" data-f="timer" />
@@ -267,6 +273,51 @@ function stepRow(step = {}, i = 0) {
 }
 
 function wireForm(wrap, formState) {
+  // --- step starter chips (optional writing aid) ---
+  // Clicking a starter inserts its text into whichever step textarea the cook
+  // last focused, at the cursor position. If they haven't focused any step yet,
+  // it targets the last step row. Never overwrites — only inserts. Cooks who
+  // write freehand can ignore the whole row.
+  let lastStepArea = null;
+  wrap.addEventListener(
+    'focusin',
+    (e) => {
+      if (e.target.matches('.step-row textarea[data-f="instruction"]')) {
+        lastStepArea = e.target;
+      }
+    },
+    true
+  );
+  wrap.querySelector('#step-starters')?.addEventListener('click', (e) => {
+    const chip = e.target.closest('.starter-chip');
+    if (!chip) return;
+    const opener = chip.dataset.starter;
+    // Pick a target: last focused step, else the last step row's textarea.
+    let area = lastStepArea;
+    if (!area || !area.isConnected) {
+      const areas = wrap.querySelectorAll('.step-row textarea[data-f="instruction"]');
+      area = areas[areas.length - 1] || null;
+    }
+    if (!area) return;
+
+    const start = area.selectionStart ?? area.value.length;
+    const end = area.selectionEnd ?? area.value.length;
+    const before = area.value.slice(0, start);
+    const after = area.value.slice(end);
+    // Add a trailing space so the cook keeps typing the rest of the sentence.
+    // If we're mid-text and the char before isn't a space/newline, pad in front.
+    const needsLeadSpace = before.length > 0 && !/\s$/.test(before);
+    const insert = (needsLeadSpace ? ' ' : '') + opener + ' ';
+    area.value = before + insert + after;
+
+    const caret = (before + insert).length;
+    area.focus();
+    area.setSelectionRange(caret, caret);
+    // Fire input so the Batch A auto-grow listener resizes the box.
+    area.dispatchEvent(new Event('input', { bubbles: true }));
+    lastStepArea = area;
+  });
+
   // --- ingredient entry mode toggle (Detailed ↔ Simple) ---
   // Switching does NOT migrate content between the two shapes (deliberately —
   // keeps the code simple). If the mode being left has any content, warn first
