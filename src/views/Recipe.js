@@ -381,6 +381,11 @@ export function Recipe(params) {
           ? `<div class="card-meta" style="margin:16px 0;">${metaBits.map((m) => `<span>${esc(m)}</span>`).join('')}</div>`
           : ''
       }
+      ${
+        Array.isArray(r.diet_tags) && r.diet_tags.length
+          ? `<div class="diet-tag-row">${r.diet_tags.map((t) => `<span class="diet-tag">${esc(t)}</span>`).join('')}</div>`
+          : ''
+      }
 
       <div class="social-bar">
         <button class="social-btn" data-action="like" aria-pressed="false">

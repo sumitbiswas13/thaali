@@ -3,7 +3,7 @@ import { onMount, navigate } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
 import { loadRecipes, findRecipe } from '../lib/mockData.js';
 import { createRecipe, updateRecipe, uploadRecipeImage, canEdit } from '../lib/recipes.js';
-import { CUISINES, COURSES, DIFFICULTIES } from '../lib/categories.js';
+import { CUISINES, COURSES, DIFFICULTIES, DIET_TAGS } from '../lib/categories.js';
 
 const MAX_IMAGES = 4;
 
@@ -169,6 +169,15 @@ function renderForm(wrap, data, existing = null) {
         <div class="field"><label>Course ${tag('course')}</label><select id="f-course">${options(COURSES, data.course)}</select></div>
         <div class="field"><label>Difficulty</label><select id="f-difficulty">${options(DIFFICULTIES, data.difficulty)}</select></div>
       </div>
+      <div class="field" style="margin-top:4px;">
+        <label>Dietary tags <span class="muted" style="font-weight:400;">(optional — pick any that apply)</span></label>
+        <div class="diet-chips" id="f-diet">
+          ${DIET_TAGS.map((t) => {
+            const on = (data.diet_tags || []).some((d) => d.toLowerCase() === t.toLowerCase());
+            return `<button type="button" class="diet-chip" data-diet="${esc(t)}" aria-pressed="${on}">${esc(t)}</button>`;
+          }).join('')}
+        </div>
+      </div>
       <div class="field-row" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
         <div class="field"><label>Prep (min)</label><input type="number" id="f-prep" value="${esc(data.prep_time)}" placeholder="10" /></div>
         <div class="field"><label>Cook (min)</label><input type="number" id="f-cook" value="${esc(data.cook_time)}" placeholder="25" /></div>
@@ -236,6 +245,14 @@ function stepRow(step = {}, i = 0) {
 }
 
 function wireForm(wrap, formState) {
+  // --- dietary tag chips (multi-select toggle) ---
+  wrap.querySelector('#f-diet')?.addEventListener('click', (e) => {
+    const chip = e.target.closest('.diet-chip');
+    if (!chip) return;
+    const on = chip.getAttribute('aria-pressed') === 'true';
+    chip.setAttribute('aria-pressed', on ? 'false' : 'true');
+  });
+
   // --- live total-time readout ---
   const updateTotal = () => {
     const prep = Number(wrap.querySelector('#f-prep')?.value) || 0;
@@ -441,6 +458,9 @@ function collect(wrap, formState) {
     cuisine: val('f-cuisine'),
     course: val('f-course'),
     difficulty: val('f-difficulty'),
+    diet_tags: [...wrap.querySelectorAll('#f-diet .diet-chip[aria-pressed="true"]')].map(
+      (c) => c.dataset.diet
+    ),
     prep_time: num('f-prep'),
     cook_time: num('f-cook'),
     servings: num('f-servings'),

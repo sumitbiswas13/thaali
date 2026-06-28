@@ -43,6 +43,28 @@ export const COURSES = [
 export const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 
 // ---------------------------------------------------------------------------
+// Dietary tags — MULTI-select (a recipe can carry several).
+// Stored as a text[] array in the DB (column: diet_tags). Cook-declared,
+// not verified — the Browse filter shows a note to that effect for allergens.
+// Order here is the display order in the form and filter.
+// ---------------------------------------------------------------------------
+export const DIET_TAGS = [
+  'Non-Vegetarian',
+  'Vegetarian',
+  'Eggless',
+  'Vegan',
+  'Jain',
+  'Gluten-Free',
+  'Nut-Free',
+  'Dairy-Free',
+  'Soy-Free',
+];
+
+// Which tags are allergen / free-from claims (these get the "as tagged by the
+// cook — always check ingredients" caveat near the filter).
+export const DIET_ALLERGEN_TAGS = ['Gluten-Free', 'Nut-Free', 'Dairy-Free', 'Soy-Free'];
+
+// ---------------------------------------------------------------------------
 // Total-time filter buckets for the Browse page.
 // `match(totalMinutes)` returns true if a recipe falls in the bucket.
 // `All` has no match fn (it is the default "no filter" chip).

@@ -3,7 +3,7 @@ import { RecipeCard } from '../components/RecipeCard.js';
 import { recipes } from '../lib/mockData.js';
 import { onMount, navigate as go } from '../lib/router.js';
 import { isSignedIn } from '../lib/auth.js';
-import { CUISINES, COURSES, DIFFICULTIES, TIME_BUCKETS } from '../lib/categories.js';
+import { CUISINES, COURSES, DIFFICULTIES, TIME_BUCKETS, DIET_TAGS, DIET_ALLERGEN_TAGS } from '../lib/categories.js';
 import { fetchLikeCounts, fetchCommentCounts } from '../lib/social.js';
 
 // Module-scoped count caches, filled once per Browse mount and reused across
@@ -38,7 +38,12 @@ export function Home(params = {}) {
   const diffChips = ['All', ...DIFFICULTIES.filter((d) => usedDiffs.has(d))];
   const timeChips = ['All', ...TIME_BUCKETS.map((b) => b.label)];
 
-  const state = { cuisine: 'All', course: 'All', difficulty: 'All', time: 'All', q: initialQ, page: 1 };
+  // Dietary tags actually present across the catalog (keeps the bar tidy when
+  // few tags are in use). Preserve DIET_TAGS order.
+  const usedDiet = new Set(recipes.flatMap((r) => r.diet_tags || []));
+  const dietChips = DIET_TAGS.filter((t) => usedDiet.has(t));
+
+  const state = { cuisine: 'All', course: 'All', difficulty: 'All', time: 'All', diet: [], q: initialQ, page: 1 };
 
   // Free-text match across the fields a cook would search by.
   function matchesText(r) {
@@ -97,6 +102,8 @@ export function Home(params = {}) {
           (state.cuisine === 'All' || r.cuisine === state.cuisine) &&
           (state.course === 'All' || r.course === state.course) &&
           (state.difficulty === 'All' || r.difficulty === state.difficulty) &&
+          (state.diet.length === 0 ||
+            state.diet.every((t) => (r.diet_tags || []).includes(t))) &&
           matchesTime(r)
       );
     }
@@ -179,6 +186,23 @@ export function Home(params = {}) {
     wireGroup('difficulty', 'difficulty');
     wireGroup('time', 'time');
 
+    // Dietary tags are MULTI-select: toggling adds/removes from state.diet,
+    // and a recipe must carry ALL selected tags (AND) to pass the filter.
+    document.querySelectorAll('[data-group="diet"] .chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const val = chip.dataset.val;
+        const on = chip.getAttribute('aria-pressed') === 'true';
+        chip.setAttribute('aria-pressed', on ? 'false' : 'true');
+        if (on) {
+          state.diet = state.diet.filter((t) => t !== val);
+        } else {
+          state.diet.push(val);
+        }
+        state.page = 1;
+        apply();
+      });
+    });
+
     // Pagination clicks (delegated — buttons are re-rendered each apply()).
     pager.addEventListener('click', (e) => {
       const b = e.target.closest('.page-btn');
@@ -242,6 +266,25 @@ export function Home(params = {}) {
           ${diffChips.length > 1 ? filterCol('difficulty', 'Difficulty', diffChips) : ''}
           ${filterCol('time', 'Time', timeChips)}
         </div>
+        ${
+          dietChips.length
+            ? `<div class="filter-bar diet-bar">
+                 <div class="filter-col" data-group-col="diet" style="flex:1;">
+                   <span class="filter-label">Dietary
+                     <span class="muted" style="font-weight:400;text-transform:none;letter-spacing:0;">— tagged by the cook; always check ingredients</span>
+                   </span>
+                   <div class="chips" data-group="diet">
+                     ${dietChips
+                       .map(
+                         (c) =>
+                           `<button class="chip" data-val="${c}" aria-pressed="false">${c}</button>`
+                       )
+                       .join('')}
+                   </div>
+                 </div>
+               </div>`
+            : ''
+        }
         <div class="grid grid-compact" id="recipe-grid">
           ${recipes.map(RecipeCard).join('')}
         </div>

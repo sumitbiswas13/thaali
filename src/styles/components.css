@@ -152,6 +152,39 @@
 .chip[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .chip:hover { border-color: var(--saffron); }
 
+/* ── Dietary tags ─────────────────────────────────── */
+/* Form chips (Submit/Edit): multi-select toggle. Selected = saffron fill. */
+.diet-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.diet-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--line-strong);
+  font-size: 0.85rem;
+  background: var(--paper-raised);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.diet-chip:hover { border-color: var(--saffron); }
+.diet-chip[aria-pressed='true'] {
+  background: var(--saffron);
+  border-color: var(--saffron);
+  color: var(--ink);
+  font-weight: 600;
+}
+/* Browse: dietary filter sits on its own row under the main filter bar. */
+.diet-bar { margin-top: -4px; padding-top: 12px; border-top: none; }
+.diet-bar .chip[aria-pressed='true'] { background: var(--saffron); color: var(--ink); border-color: var(--saffron); }
+/* Recipe page: read-only tag pills under the meta row. */
+.diet-tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
+.diet-tag {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--saffron);
+  font-size: 0.8rem;
+  color: var(--ink);
+  background: transparent;
+}
+
 /* ── Community stats bar ──────────────────────────── */
 .stats {
   display: grid;
