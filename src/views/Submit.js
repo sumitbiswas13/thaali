@@ -388,6 +388,20 @@ function wireForm(wrap, formState) {
     }
   });
   bindRemovers(wrap);
+
+  // ── Auto-grow textareas ──────────────────────────────────────────
+  // A textarea sized to its content is friendlier than a fixed 2-row box
+  // (esp. in edit mode, where existing text overflows a small box). One
+  // delegated listener covers every textarea, including rows added later.
+  function grow(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+  wrap.addEventListener('input', (e) => {
+    if (e.target.tagName === 'TEXTAREA') grow(e.target);
+  });
+  // Size whatever is already populated on mount (edit mode / imports).
+  wrap.querySelectorAll('textarea').forEach(grow);
 }
 
 function collect(wrap, formState) {

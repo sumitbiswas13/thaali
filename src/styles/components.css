@@ -189,6 +189,10 @@
   background: var(--paper);
 }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--saffron); outline: none; }
+/* Auto-grow: native where supported (Chrome/Edge), JS fallback elsewhere
+   (see Submit.js). min-height keeps an empty box from collapsing too small. */
+.field textarea { field-sizing: content; min-height: 3.2em; resize: vertical; }
+.step-row textarea { field-sizing: content; min-height: 2.6em; }
 
 /* ── Browse filters ──────────────────────────────────────────────── */
 /* Horizontal filter bar: each filter is a stacked label + chip row, laid

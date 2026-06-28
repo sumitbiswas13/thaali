@@ -22,6 +22,17 @@ function esc(v) {
     .replace(/>/g, '&gt;');
 }
 
+// Light formatting for cook-authored prose (description + step instructions).
+// SAFETY: escapes ALL html first (via esc), THEN converts a tiny markdown
+// subset on the already-escaped string — so no raw user html ever survives.
+// Supported: **bold**, *italic*, and line breaks. Nothing else.
+function fmt(v) {
+  return esc(v)
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>')
+    .replace(/\r?\n/g, '<br>');
+}
+
 function timeAgo(iso) {
   const d = new Date(iso);
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
@@ -59,7 +70,7 @@ export function Recipe(params) {
         .map((s) => {
           const mins = s.timer_seconds ? Math.round(s.timer_seconds / 60) : 0;
           const timer = mins > 0 ? `<span class="step-timer-badge">⏱ ${mins} min</span>` : '';
-          return `<li>${esc(s.instruction)}${timer}</li>`;
+          return `<li>${fmt(s.instruction)}${timer}</li>`;
         })
         .join('')
     : '<li>No method listed yet.</li>';
@@ -364,7 +375,7 @@ export function Recipe(params) {
       }
       ${eyebrow ? `<p class="eyebrow">${esc(eyebrow)}</p>` : ''}
       <h1>${esc(r.title)}</h1>
-      <p class="lede" style="font-size:1.1rem;">${esc(r.description || '')}</p>
+      <p class="lede" style="font-size:1.1rem;">${fmt(r.description || '')}</p>
       ${
         metaBits.length
           ? `<div class="card-meta" style="margin:16px 0;">${metaBits.map((m) => `<span>${esc(m)}</span>`).join('')}</div>`
