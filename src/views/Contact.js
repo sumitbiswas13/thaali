@@ -142,9 +142,9 @@ export function Contact() {
     <main>
       <div class="panel" id="contact-panel">
         <h2>Contact &amp; support</h2>
-        <p class="sub">
-          Hit a bug, have a concern, or an idea to make Thaali better? Send it our
-          way through this form — we'd love to hear from you.
+        <p class="lede-serif">
+          Found a bug, got a question, or dreamed up something that'd make Thaali
+          better? We're all ears — drop us a line below and a real person will read it.
         </p>
 
         <div class="field">

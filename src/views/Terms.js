@@ -11,11 +11,11 @@ export function Terms() {
       <h1>Terms of Service</h1>
       <p class="muted">Last updated: ${UPDATED}</p>
 
-      <p>
+      <p class="lede-serif">
         Welcome to Thaali, a free community cookbook at
-        <a href="https://thaali.app">thaali.app</a>. By creating an account or
-        using the service, you agree to these terms. Please read them — they’re
-        short.
+        <a href="https://thaali.app">thaali.app</a>. A few ground rules keep this a
+        good place to share — they're short and written in plain English, so please
+        give them a read.
       </p>
 
       <h2>Using Thaali</h2>

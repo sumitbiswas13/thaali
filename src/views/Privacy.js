@@ -13,11 +13,11 @@ export function Privacy() {
       <h1>Privacy Policy</h1>
       <p class="muted">Last updated: ${UPDATED}</p>
 
-      <p>
-        Thaali is a free, ad-free community cookbook. This policy explains what
-        information we collect, how we use it, and the choices you have. We keep
-        it short and plain because that reflects how we actually operate:
-        <strong>no ads, no paywall, and no selling of your data — ever.</strong>
+      <p class="lede-serif">
+        Thaali is a free, ad-free community cookbook — built by cooks, for everyone.
+        Here's exactly what we collect, why, and the say you have in it. It's short and
+        plain on purpose, because that's how we run: <strong>no ads, no paywall, and
+        we never sell your data — ever.</strong>
       </p>
 
       <h2>Who we are</h2>
