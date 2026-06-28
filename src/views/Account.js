@@ -84,28 +84,28 @@ function renderAccount(wrap, profile, pending) {
 }
 
 // --- Change email ----------------------------------------------------------
-// Only magic-link/email users can change their address here. Google users sign
-// in through Google, so their email is managed there — we explain that rather
-// than offer a control that can't work.
+// Available to ALL users. For magic-link users it's a straightforward change.
+// For Google users it adds an email-based sign-in on the new address (their
+// Google login still works too) — the copy says so rather than pretending it's
+// a simple swap. Either way the user's `id` is unchanged, so all their recipes
+// stay attached (recipes key on author_id, not email).
 function renderEmailRegion(region, me) {
   if (!region) return;
   const current = me.email || '—';
   const isGoogle = me.provider === 'google';
 
-  if (isGoogle) {
-    region.innerHTML = `
-      <p class="muted">You’re signed in with Google, so your email
-      (<strong>${esc(current)}</strong>) is managed by your Google account.
-      To use a different address, sign in with that email via a magic link instead.</p>
-    `;
-    return;
-  }
+  const intro = isGoogle
+    ? `<p class="muted">You currently sign in with Google (<strong>${esc(current)}</strong>).
+        You can add a different email below — we’ll send it a confirmation link, and once
+        you confirm, you’ll be able to sign in with that email too. Your recipes and
+        everything else stay exactly as they are.</p>`
+    : `<p class="muted">Your sign-in email is <strong>${esc(current)}</strong>.
+        Changing it sends a confirmation link to the new address — your email updates only
+        after you click that link. Your recipes stay attached.</p>`;
 
   region.innerHTML = `
-    <p class="muted">Your sign-in email is <strong>${esc(current)}</strong>.
-      Changing it sends a confirmation link to the new address — your email
-      updates only after you click that link.</p>
-    <button class="btn btn-ghost" data-action="start-email">Change email</button>
+    ${intro}
+    <button class="btn btn-ghost" data-action="start-email">${isGoogle ? 'Use a different email' : 'Change email'}</button>
     <div id="email-form" hidden></div>
   `;
 
@@ -114,11 +114,11 @@ function renderEmailRegion(region, me) {
     // deletion trigger: `.btn { display: inline-flex }` overrides the attr).
     const trigger = region.querySelector('[data-action="start-email"]');
     if (trigger) trigger.style.display = 'none';
-    renderEmailForm(region.querySelector('#email-form'));
+    renderEmailForm(region.querySelector('#email-form'), isGoogle);
   });
 }
 
-function renderEmailForm(box) {
+function renderEmailForm(box, isGoogle = false) {
   box.hidden = false;
   box.innerHTML = `
     <div class="field" style="margin-top:12px;max-width:380px;">
@@ -155,9 +155,13 @@ function renderEmailForm(box) {
     submit.textContent = 'Sending…';
     try {
       await changeEmail(next);
+      const tail = isGoogle
+        ? `Once confirmed, you’ll be able to sign in with this email or with Google.
+           For now, keep using Google to sign in.`
+        : `Until then, keep signing in with your current email.`;
       box.innerHTML = `<p class="import-msg ok">Almost done — we’ve sent a confirmation
-        link to <strong>${esc(next)}</strong>. Click it from that inbox to finish the
-        change. Until then, keep signing in with your current email.</p>`;
+        link to <strong>${esc(next)}</strong>. Click it from that inbox to finish.
+        ${tail}</p>`;
     } catch (err) {
       msg.textContent = err.message || 'Could not change email.';
       msg.classList.add('warn');
