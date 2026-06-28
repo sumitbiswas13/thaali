@@ -1181,3 +1181,6 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 }
 .lede-serif strong { font-style: normal; font-weight: 600; }
 .lede-serif a { font-style: normal; }
+/* Contact page sits under a smaller h2 (vs the h1 on Privacy/Terms), so the
+   shared lede runs oversized there — scale it down ~20% on Contact only. */
+#contact-panel .lede-serif { font-size: clamp(1rem, 1.92vw, 1.2rem); }
