@@ -204,10 +204,12 @@ function esc(s) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
-// Remove the shell's generic description/OG/Twitter tags so recipe-specific
-// ones don't duplicate. Leaves favicons, manifest, theme-color, charset, etc.
+// Remove the shell's generic <title> + description/OG/Twitter tags so the
+// recipe-specific ones we inject are the only ones (no duplicate <title>).
+// Leaves favicons, manifest, theme-color, charset, etc.
 function stripGenericMeta(html) {
   return html
+    .replace(/<title>[\s\S]*?<\/title>/i, '')
     .replace(/<meta\s+name="description"[\s\S]*?\/>/i, '')
     .replace(/<meta\s+property="og:type"[\s\S]*?\/>/i, '')
     .replace(/<meta\s+property="og:title"[\s\S]*?\/>/i, '')

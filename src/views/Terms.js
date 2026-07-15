@@ -2,7 +2,7 @@ import { Header, Footer } from '../components/layout.js';
 
 // Route: /terms → Thaali's terms of service. PUBLIC — no auth guard.
 
-const UPDATED = 'June 23, 2026';
+const UPDATED = 'July 14, 2026';
 
 export function Terms() {
   return `
@@ -29,6 +29,19 @@ export function Terms() {
           Thaali is provided free of charge, for personal, non-commercial use.
         </li>
       </ul>
+
+      <h2>Cost and signing up</h2>
+      <p>
+        Thaali is free — and always will be. No ads, no paywall, no premium tier,
+        and we never sell your data. You don’t even need an account to read
+        recipes; those are open to everyone. We ask for an email for one reason: so
+        you have an account. It’s your login, and it’s what lets you like and
+        comment, follow cooks, and save and share your own recipes. We use it only
+        to sign you in and to contact you about your account if we ever need to —
+        never marketing, never spam. In short: <strong>an account, not a price.</strong>
+        See our <a href="/privacy">Privacy Policy</a> for exactly how your email
+        and data are handled.
+      </p>
 
       <h2>Your content</h2>
       <ul class="legal-list">
