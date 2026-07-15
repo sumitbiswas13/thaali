@@ -1424,3 +1424,24 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 .lb-avatar-fallback { background: linear-gradient(135deg, var(--turmeric, #d9b441), var(--saffron)); color: #fff; font-weight: 600; }
 .lb-name { flex: 1; }
 .lb-score { font-weight: 700; color: var(--saffron); }
+
+/* --- Higher or Lower game (2026-07-15) ------------------------------------ */
+.hl-empty { text-align: center; padding: 20px 0; }
+.hl-empty h2 { font-family: var(--font-display, serif); }
+.hl-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.hl-metric { font-family: var(--font-display, serif); font-size: 1.1rem; color: var(--ink); }
+.hl-streak { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-soft); }
+.hl-cards { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; }
+@media (max-width: 520px) { .hl-cards { grid-template-columns: 1fr; } .hl-vs { margin: 4px 0; } }
+.hl-card { border: 1px solid var(--line); border-radius: var(--radius, 14px); overflow: hidden; background: #fff; text-align: center; }
+.hl-photo { aspect-ratio: 4/3; background: var(--cream, #f3ead9); }
+.hl-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hl-card h3 { font-size: 1rem; margin: 12px 12px 4px; font-family: var(--font-display, serif); }
+.hl-value { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 600; color: var(--saffron); margin: 0 0 14px; }
+.hl-value-hidden { color: var(--ink-soft); }
+.hl-vs { font-family: var(--font-display, serif); font-style: italic; color: var(--ink-soft); font-size: 1.1rem; text-align: center; }
+.hl-choices { display: flex; gap: 8px; justify-content: center; padding: 0 12px 16px; }
+.hl-choices .btn { flex: 1; }
+.hl-feedback { min-height: 28px; margin-top: 18px; text-align: center; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.hl-feedback.ok { color: #1b7a32; }
+.hl-feedback.bad { color: #c92a2a; }

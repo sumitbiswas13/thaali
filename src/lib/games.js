@@ -10,6 +10,7 @@ import { currentUser } from './auth.js';
 
 export const GAMES = {
   GUESS: 'guess-the-recipe',
+  HIGHER_LOWER: 'higher-or-lower',
 };
 
 // Record a completed game. Inserts AS the current user (RLS is the real gate).
