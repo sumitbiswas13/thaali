@@ -501,6 +501,9 @@ export function HigherLower() {
       const feedback = document.getElementById('hl-feedback');
       if (correct) {
         streak += 1;
+        // Update the top-bar counter immediately so it doesn't lag the feedback.
+        const streakEl = document.getElementById('hl-streak-n');
+        if (streakEl) streakEl.textContent = streak;
         feedback.innerHTML = `✅ Right! Streak ${streak} — <button class="btn btn-primary" id="hl-next">Next →</button>`;
         feedback.className = 'hl-feedback ok';
         document.getElementById('hl-next').addEventListener('click', () => {
