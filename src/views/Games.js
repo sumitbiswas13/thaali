@@ -35,10 +35,12 @@ export function Games() {
       <p class="lede">A little fun between recipes — and a leaderboard to climb. More games coming.</p>
       <div class="games-grid">
         <a class="game-card" href="/games/guess">
-          <div class="game-card-emoji">🍲</div>
-          <h3>Guess the Recipe</h3>
-          <p>See a photo and a few ingredients — can you name the dish? 10 rounds, beat your best.</p>
-          <span class="game-card-cta">Play →</span>
+          <div class="game-card-band"><span class="game-card-emoji">🍲</span></div>
+          <div class="game-card-body">
+            <h3>Guess the Recipe</h3>
+            <p>See a photo and a few ingredients — can you name the dish? 10 rounds, beat your best.</p>
+            <span class="game-card-cta">Play →</span>
+          </div>
         </a>
       </div>
     </main>
