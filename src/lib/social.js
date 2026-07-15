@@ -31,6 +31,38 @@ export async function fetchCommentCounts(recipeIds) {
   return map;
 }
 
+// Windowed counts: only likes/comments whose created_at is on or after
+// `sinceIso`. Used by the "dish of the week" so it reflects RECENT engagement
+// (activity in the last N days), not all-time totals — which is what makes the
+// featured dish actually rotate over time.
+export async function fetchLikeCountsSince(recipeIds, sinceIso) {
+  const map = new Map();
+  const ids = [...new Set((recipeIds || []).filter(Boolean))];
+  if (!isSupabaseReady() || ids.length === 0) return map;
+  const { data, error } = await supabase
+    .from('likes')
+    .select('recipe_id')
+    .in('recipe_id', ids)
+    .gte('created_at', sinceIso);
+  if (error) throw error;
+  for (const row of data || []) map.set(row.recipe_id, (map.get(row.recipe_id) || 0) + 1);
+  return map;
+}
+
+export async function fetchCommentCountsSince(recipeIds, sinceIso) {
+  const map = new Map();
+  const ids = [...new Set((recipeIds || []).filter(Boolean))];
+  if (!isSupabaseReady() || ids.length === 0) return map;
+  const { data, error } = await supabase
+    .from('comments')
+    .select('recipe_id')
+    .in('recipe_id', ids)
+    .gte('created_at', sinceIso);
+  if (error) throw error;
+  for (const row of data || []) map.set(row.recipe_id, (map.get(row.recipe_id) || 0) + 1);
+  return map;
+}
+
 // ---- Likes ----------------------------------------------------------------
 
 // Returns { count, liked } for a recipe (liked = does the current user like it).

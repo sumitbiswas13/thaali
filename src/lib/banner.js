@@ -1,6 +1,11 @@
 import { supabase } from './supabase.js';
 import { recipes } from './mockData.js';
-import { fetchLikeCounts, fetchCommentCounts } from './social.js';
+import {
+  fetchLikeCounts,
+  fetchCommentCounts,
+  fetchLikeCountsSince,
+  fetchCommentCountsSince,
+} from './social.js';
 
 // ---------------------------------------------------------------------------
 // Banner — the home-page hero image.
@@ -43,29 +48,48 @@ export async function fetchOccasionBanner() {
   return data && data.length ? data[0] : null;
 }
 
-// Pick the single top recipe by engagement score, for the auto fallback.
-// Mirrors Trending's scoring exactly so the two never disagree.
+// Pick the single top recipe for the auto "dish of the week".
+//
+// Ranks by engagement earned IN THE LAST 7 DAYS (likes + 2×comments whose
+// created_at falls in the window) — so the featured dish reflects what the
+// community is engaging with *now* and rotates as that shifts, instead of
+// getting permanently stuck on the all-time most-liked recipe.
+//
+// If NOTHING was engaged with this week (a quiet week), fall back to the
+// all-time top so the hero is never empty. Ties broken by newest recipe, so a
+// fresh dish edges out an older one at equal score.
 async function topDishOfWeek() {
   const all = recipes || [];
   if (all.length === 0) return null;
   try {
     const ids = all.map((r) => r.id);
-    const [likes, comments] = await Promise.all([
+    const sinceIso = new Date(Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+    // Recent-window engagement first.
+    const [wLikes, wComments] = await Promise.all([
+      fetchLikeCountsSince(ids, sinceIso),
+      fetchCommentCountsSince(ids, sinceIso),
+    ]);
+    const recentScore = (r) => (wLikes.get(r.id) || 0) + 2 * (wComments.get(r.id) || 0);
+
+    const newest = (r) => (r.created_at ? new Date(r.created_at).getTime() : 0);
+    const pick = (pool, scoreFn) =>
+      [...pool].sort((a, b) => scoreFn(b) - scoreFn(a) || newest(b) - newest(a))[0] || null;
+
+    const recentlyEngaged = all.filter((r) => recentScore(r) > 0);
+    if (recentlyEngaged.length > 0) {
+      return pick(recentlyEngaged, recentScore);
+    }
+
+    // Quiet week — fall back to all-time top so the hero still shows something.
+    const [aLikes, aComments] = await Promise.all([
       fetchLikeCounts(ids),
       fetchCommentCounts(ids),
     ]);
-    const score = (r) => (likes.get(r.id) || 0) + 2 * (comments.get(r.id) || 0);
-
-    const engaged = all.filter((r) => score(r) > 0);
-    if (engaged.length === 0) return null; // nothing has engagement yet
-
-    const cutoff = Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000;
-    const inWindow = engaged.filter((r) => {
-      const t = r.created_at ? new Date(r.created_at).getTime() : NaN;
-      return !Number.isNaN(t) && t >= cutoff;
-    });
-    const pool = inWindow.length ? inWindow : engaged;
-    return [...pool].sort((a, b) => score(b) - score(a))[0] || null;
+    const allScore = (r) => (aLikes.get(r.id) || 0) + 2 * (aComments.get(r.id) || 0);
+    const engaged = all.filter((r) => allScore(r) > 0);
+    if (engaged.length === 0) return null; // nothing has any engagement yet
+    return pick(engaged, allScore);
   } catch {
     return null;
   }
