@@ -26,10 +26,14 @@ function paramKeys(pattern) {
 }
 
 function patternToRegex(pattern) {
-  // Escape regex special chars, then turn :param into a capture group.
+  // Turn :param into a capture group FIRST (while the colon is still a plain
+  // ':'), then escape the remaining regex-special chars. Escaping first would
+  // leave the colon untouched (':' isn't special) but the param regex looked
+  // for an escaped '\:' that never existed — so params never matched.
   const src = pattern
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/\\:([A-Za-z0-9_]+)/g, '([^/]+)');
+    .replace(/:([A-Za-z0-9_]+)/g, '\x00$1\x00')          // mark params with a placeholder
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')               // escape the rest
+    .replace(/\x00([A-Za-z0-9_]+)\x00/g, '([^/]+)');      // params → capture group
   return new RegExp('^' + src + '/?$');
 }
 
