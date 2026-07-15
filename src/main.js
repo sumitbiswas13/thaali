@@ -19,6 +19,7 @@ import { Account } from './views/Account.js';
 import { Admin } from './views/Admin.js';
 import { Privacy } from './views/Privacy.js';
 import { Terms } from './views/Terms.js';
+import { Games, Guess } from './views/Games.js';
 import { TURNSTILE_SITE_KEY } from './lib/config.js';
 
 // Load fonts (Fraunces display, Inter body, IBM Plex Mono utility).
@@ -54,6 +55,8 @@ route('/account', Account);
 route('/admin', Admin);
 route('/privacy', Privacy);
 route('/terms', Terms);
+route('/games', Games);
+route('/games/guess', Guess);
 
 // Global sign-out handler (header button exists across views)
 document.addEventListener('click', (e) => {

@@ -1351,3 +1351,67 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
   color: var(--ink-soft);
   text-align: center;
 }
+
+/* --- Games (2026-07-14) --------------------------------------------------- */
+.games-hub { padding-top: 8px; }
+.games-hub .lede { color: var(--ink-soft); max-width: 56ch; margin-bottom: 24px; }
+.games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.game-card {
+  display: block; text-decoration: none; color: inherit;
+  border: 1px solid var(--line); border-radius: var(--radius, 14px);
+  padding: 22px; background: #fff; transition: border-color .15s, transform .15s;
+}
+.game-card:hover { border-color: var(--saffron); transform: translateY(-2px); }
+.game-card-emoji { font-size: 2.2rem; }
+.game-card h3 { margin: 10px 0 6px; font-family: var(--font-display, serif); }
+.game-card p { color: var(--ink-soft); font-size: 0.92rem; margin: 0 0 12px; }
+.game-card-cta { color: var(--saffron); font-weight: 600; }
+.game-back, .game-card-cta { text-decoration: none; }
+.game-back { display: inline-block; margin-bottom: 16px; color: var(--ink-soft); text-decoration: none; }
+.game-back:hover { color: var(--saffron); }
+
+/* Guess the Recipe board */
+.guess-game { max-width: 620px; }
+.guess-board { }
+.guess-topbar { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 12px; }
+.guess-photo { border-radius: var(--radius, 14px); overflow: hidden; aspect-ratio: 16/10; background: var(--cream, #f3ead9); display: flex; align-items: center; justify-content: center; }
+.guess-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.guess-hint { margin: 16px 0 4px; font-size: 0.85rem; color: var(--ink-soft); }
+.guess-clues { list-style: none; padding: 0; margin: 0 0 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+.guess-clues li { background: var(--cream, #f3ead9); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 0.88rem; }
+.guess-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 520px) { .guess-choices { grid-template-columns: 1fr; } }
+.guess-choice {
+  padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 12px;
+  background: #fff; font-size: 0.95rem; cursor: pointer; text-align: left;
+  transition: border-color .12s, background .12s;
+}
+.guess-choice:hover:not(:disabled) { border-color: var(--saffron); }
+.guess-choice:disabled { cursor: default; }
+.guess-choice.correct { border-color: #2f9e44; background: #ebfbee; color: #1b7a32; font-weight: 600; }
+.guess-choice.wrong { border-color: #e03131; background: #fff0f0; color: #c92a2a; }
+.guess-feedback { min-height: 24px; margin: 16px 0 4px; font-size: 0.95rem; }
+.guess-feedback.ok { color: #1b7a32; }
+.guess-feedback.bad { color: #c92a2a; }
+.guess-next-wrap { display: flex; justify-content: flex-end; }
+
+.guess-end { text-align: center; padding: 12px 0; }
+.guess-end h2 { font-family: var(--font-display, serif); }
+.guess-final { font-size: 1.15rem; margin: 8px 0; }
+.guess-savestate { font-size: 0.85rem; margin-bottom: 20px; }
+.guess-end-actions { display: flex; gap: 12px; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
+
+/* Leaderboard */
+.leaderboard { text-align: left; border-top: 1px solid var(--line); padding-top: 20px; }
+.lb-head { display: flex; justify-content: space-between; align-items: baseline; }
+.lb-head h3 { margin: 0; }
+.lb-window { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.lb-list { list-style: none; padding: 0; margin: 14px 0 0; }
+.lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.lb-rank { width: 28px; text-align: center; font-weight: 600; color: var(--ink-soft); }
+.lb-avatar { width: 32px; height: 32px; }
+.lb-avatar-img, .lb-avatar-fallback { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.lb-avatar-img { object-fit: cover; }
+.lb-avatar-fallback { background: linear-gradient(135deg, var(--turmeric, #d9b441), var(--saffron)); color: #fff; font-weight: 600; }
+.lb-name { flex: 1; }
+.lb-score { font-weight: 700; color: var(--saffron); }

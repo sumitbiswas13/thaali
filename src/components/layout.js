@@ -61,6 +61,7 @@ export function Header() {
             signedIn
               ? `<a class="btn btn-ghost" href="/home">Browse</a>
                  <a class="btn btn-ghost" href="/news">News</a>
+                 <a class="btn btn-ghost" href="/games">Games</a>
                  <a class="btn btn-ghost" href="/submit">Add a recipe</a>
                  ${headerAvatar()}`
               : `<a class="btn btn-ghost" href="/auth">Sign in</a>
