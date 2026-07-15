@@ -70,15 +70,59 @@ function coverOf(r) {
   return null;
 }
 
+// Common measurement units + amount phrases that sometimes get typed INTO the
+// ingredient name (e.g. "to taste Water", "1 cup water"). We strip a leading
+// run of these so the clue chip reads as a clean ingredient ("Water").
+const UNIT_WORDS = new Set([
+  'cup', 'cups', 'tsp', 'teaspoon', 'teaspoons', 'tbsp', 'tablespoon', 'tablespoons',
+  'g', 'gram', 'grams', 'kg', 'kilogram', 'kilograms', 'ml', 'l', 'liter', 'litre', 'liters', 'litres',
+  'oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds',
+  'pinch', 'pinches', 'dash', 'handful', 'clove', 'cloves', 'slice', 'slices',
+  'piece', 'pieces', 'can', 'cans', 'packet', 'packets', 'stick', 'sticks',
+  'bunch', 'sprig', 'sprigs', 'stalk', 'stalks',
+]);
+
+// Strip a leading amount/unit phrase from an ingredient string.
+// Handles: numbers/fractions ("2", "1/2", "1.5"), unicode fractions (½),
+// units from UNIT_WORDS, and the phrases "to taste", "a"/"an", "of".
+function cleanIngredientName(raw) {
+  let s = String(raw || '').trim();
+  if (!s) return '';
+  // "to taste" often leads a raw line; drop it wherever it sits at the start.
+  s = s.replace(/^to\s+taste\s+/i, '');
+  // Repeatedly peel leading tokens that are amounts or units.
+  const isAmount = (t) => /^[\d]+([./][\d]+)?$/.test(t) || /^[¼½¾⅓⅔⅛]+$/.test(t) || /^\d*[¼½¾⅓⅔⅛]$/.test(t);
+  let guard = 0;
+  while (guard++ < 6) {
+    const m = s.match(/^(\S+)\s+(.*)$/);
+    if (!m) break;
+    const first = m[1].toLowerCase().replace(/[.,]$/, '');
+    if (isAmount(first) || UNIT_WORDS.has(first) || first === 'a' || first === 'an' || first === 'of') {
+      s = m[2].trim();
+    } else break;
+  }
+  // If stripping ate everything (e.g. the name WAS just "to taste"), fall back
+  // to the original so we never show an empty chip.
+  return s || String(raw).trim();
+}
+
 // Pull readable ingredient names (handles both structured and simple/raw shapes).
+// Prefers a clean `item`; for raw/simple lines, strips any leading amount/unit.
 function ingredientNames(r) {
   const arr = Array.isArray(r.ingredients) ? r.ingredients : [];
   const out = [];
   for (const ing of arr) {
-    if (typeof ing === 'string') { if (ing.trim()) out.push(ing.trim()); continue; }
+    if (typeof ing === 'string') {
+      const c = cleanIngredientName(ing);
+      if (c) out.push(c);
+      continue;
+    }
     if (ing && typeof ing === 'object') {
+      // Structured mode: `item` is the name (quantity/unit live in their own
+      // fields). Simple mode: `raw` holds the whole line. Either way, clean it.
       const name = ing.item || ing.raw || '';
-      if (name && String(name).trim()) out.push(String(name).trim());
+      const c = cleanIngredientName(name);
+      if (c) out.push(c);
     }
   }
   return out;
