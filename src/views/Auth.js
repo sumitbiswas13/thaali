@@ -48,8 +48,8 @@ export function Auth() {
     ${Header()}
     <main>
       <div class="panel" id="auth-panel">
-        <h2>Join Thaali</h2>
-        <p class="sub">Free forever. One step and you're in.</p>
+        <h2>Join Thaali — free, forever.</h2>
+        <p class="sub">No ads, no paywall, no selling your data — ever. Reading recipes doesn't even need an account. We ask for an email so you have one: it's what lets you save recipes, comment, follow cooks, and share your own.</p>
         <button class="btn btn-ghost btn-block" data-action="google">Continue with Google</button>
         <div class="divider">or</div>
         <div class="field">
@@ -57,6 +57,7 @@ export function Auth() {
           <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
         </div>
         <button class="btn btn-primary btn-block" data-action="magic">Send me a sign-in link</button>
+        <p class="auth-fineprint">We use your email only to sign you in and secure your account — no marketing, no spam, and we never sell it.</p>
       </div>
     </main>
     ${Footer()}

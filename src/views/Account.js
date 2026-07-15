@@ -10,7 +10,7 @@ import {
   cancelDeletion,
 } from '../lib/account.js';
 
-// Route: #/account → the signed-in cook's account page (profile summary +
+// Route: /account → the signed-in cook's account page (profile summary +
 // account-deletion request flow). Owner-only; there's no "other user" variant.
 export function Account() {
   if (!isSignedIn()) {
@@ -59,7 +59,7 @@ function renderAccount(wrap, profile, pending) {
         ${profile?.country ? `<div><dt>Country</dt><dd>${esc(countryName(profile.country))}</dd></div>` : ''}
         <div><dt>Recipes</dt><dd>${mine.length}</dd></div>
       </dl>
-      <a class="btn btn-ghost" href="#/profile">Edit profile</a>
+      <a class="btn btn-ghost" href="/profile">Edit profile</a>
     </section>
 
     <section class="account-card">

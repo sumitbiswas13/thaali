@@ -24,7 +24,7 @@ export function Submit(params = {}) {
     return '';
   }
 
-  // Edit mode: #/submit?edit=<slug|short_code|uuid>
+  // Edit mode: /submit?edit=<slug|short_code|uuid>
   const editing = params.edit ? findRecipe(params.edit) : null;
   if (params.edit && !editing) {
     navigate('/home');
@@ -32,7 +32,7 @@ export function Submit(params = {}) {
   }
   if (editing && !canEdit(editing)) {
     // Not the owner/admin — bounce to the recipe.
-    navigate('/recipe?id=' + (editing.slug || editing.short_code || editing.id));
+    navigate('/recipe/' + (editing.slug || editing.short_code || editing.id));
     return '';
   }
 

@@ -5,7 +5,7 @@ import { currentUser } from './auth.js';
 // Admin queue client layer. All reads/updates here rely on the admin RLS
 // policies already in the schema (reports_read_own_or_admin / reports_update_
 // admin / deletion_read_own_or_admin). A non-admin simply sees nothing — but
-// the #/admin route is also guarded in the view, and the destructive deletion
+// the /admin route is also guarded in the view, and the destructive deletion
 // action additionally re-checks admin server-side in the Function.
 // ---------------------------------------------------------------------------
 

@@ -45,8 +45,9 @@ route('/', Landing);
 route('/auth', Auth);
 route('/home', Home);
 route('/submit', Submit);
-route('/recipe', Recipe);
+route('/recipe/:slug', Recipe);
 route('/profile', Profile);
+route('/profile/:id', Profile);
 route('/news', News);
 route('/contact', Contact);
 route('/account', Account);
@@ -84,11 +85,11 @@ document.addEventListener('keydown', (e) => {
   const input = e.target.closest?.('#header-search-input');
   if (!input || e.key !== 'Enter') return;
   const term = input.value.trim();
-  location.hash = term ? `/home?q=${encodeURIComponent(term)}` : '/home';
+  navigate(term ? `/home?q=${encodeURIComponent(term)}` : '/home');
 });
 
 // Keep the search box in sync with the URL on every navigation.
-window.addEventListener('hashchange', prefillHeaderSearch);
+window.addEventListener('popstate', prefillHeaderSearch);
 
 // Keep the profile/avatar cache in sync on every sign-in/sign-out transition,
 // not just at boot. On first OAuth sign-in the redirect-back fires an auth

@@ -1,10 +1,10 @@
 import { Header, Footer } from '../components/layout.js';
 
-// Route: #/privacy → Thaali's privacy policy. PUBLIC — no auth guard, so it's
+// Route: /privacy → Thaali's privacy policy. PUBLIC — no auth guard, so it's
 // reachable by anyone (and by Google's OAuth brand-verification reviewer, who
 // is not signed in). Plain informational content; no data collection here.
 
-const UPDATED = 'June 23, 2026';
+const UPDATED = 'July 14, 2026';
 
 export function Privacy() {
   return `
@@ -20,11 +20,23 @@ export function Privacy() {
         we never sell your data — ever.</strong>
       </p>
 
+      <h2>Why we ask for an email</h2>
+      <p>
+        Thaali is free and always will be — no ads, no paywall, no premium tier,
+        and we never sell your data. You don't even need an account to <em>read</em>
+        recipes; those are open to everyone. We ask for an email for one reason: so
+        you have an account. It's your login, and it's what lets you like and
+        comment, follow the cooks you love, and save and share your own recipes.
+        We use it only to sign you in and to contact you about your account if we
+        ever need to — never marketing, never spam. <strong>An account, not a
+        price.</strong>
+      </p>
+
       <h2>Who we are</h2>
       <p>
         Thaali (“we”, “us”) operates the website at
         <a href="https://thaali.app">thaali.app</a>. You can reach us any time
-        through our <a href="#/contact">contact form</a>.
+        through our <a href="/contact">contact form</a>.
       </p>
 
       <h2>Information we collect</h2>
@@ -75,8 +87,10 @@ export function Privacy() {
 
       <h2>How your information is shared</h2>
       <p>
-        Content you choose to publish — recipes, photos, comments, your display
-        name and avatar — is visible to other signed-in members of Thaali. We do
+        Recipes you publish — along with their photos, your display name, and your
+        avatar — are <strong>public</strong>: they can be viewed by anyone on the
+        web, including search engines like Google, so people can find and cook them.
+        Comments, likes, and follows are visible to other signed-in members. We do
         not otherwise share your personal information, except:
       </p>
       <ul class="legal-list">
@@ -105,7 +119,7 @@ export function Privacy() {
         <li>You can edit your profile and your content at any time while signed in.</li>
         <li>
           You can request deletion of your account from your account page
-          (<a href="#/account">Your account</a>). When an account is deleted, your
+          (<a href="/account">Your account</a>). When an account is deleted, your
           profile and associated data are removed; you may choose whether your
           recipes are deleted or kept and shown as “A Thaali cook”.
         </li>
@@ -132,7 +146,7 @@ export function Privacy() {
       <h2>Contact</h2>
       <p>
         Questions about this policy? Reach us through our
-        <a href="#/contact">contact form</a>.
+        <a href="/contact">contact form</a>.
       </p>
     </main>
     ${Footer()}

@@ -865,7 +865,7 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 .news-media-empty span { font-size: 2.2rem; opacity: .55; }
 
 /* ===========================================================================
-   Account page  (#/account) — profile summary + account-deletion flow.
+   Account page  (/account) — profile summary + account-deletion flow.
    Styling derives from the existing kitchen-warmth tokens. The "danger zone"
    uses a restrained terracotta border (not a new accent) so it reads as
    careful-here without fighting the saffron system.
@@ -1052,7 +1052,7 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 }
 
 /* ===========================================================================
-   Admin moderation queue (#/admin)  (2026-06-23)
+   Admin moderation queue (/admin)  (2026-06-23)
    Reports + deletion-request cards, filter tabs, small action buttons.
    =========================================================================== */
 .admin-panel { margin: 28px 0 40px; }
@@ -1112,7 +1112,7 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
 .auth-status.warn { color: #9a6a00; }
 
 /* ===========================================================================
-   Legal pages (#/privacy, #/terms)  (2026-06-23)
+   Legal pages (/privacy, /terms)  (2026-06-23)
    Readable prose column; public, no login needed.
    =========================================================================== */
 .legal-page { max-width: 760px; margin: clamp(32px, 6vw, 64px) auto; padding-bottom: 64px; }
@@ -1320,4 +1320,34 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
   .site-footer .wrap { flex-direction: column; align-items: flex-start; }
   .footer-right { text-align: left; align-self: stretch; }
   .footer-links { justify-content: flex-start; }
+}
+
+/* --- Signup gate on public recipe pages (2026-07-14) ---------------------
+   Shown to logged-out visitors below a fully-readable recipe. Warm invite to
+   join; states the free/no-ads/no-paywall promise and why an email is needed.
+   Uses the brand saffron + cream tokens to feel of-a-piece, not a hard wall. */
+.signup-gate {
+  margin: 40px 0 8px;
+  padding: 28px 26px;
+  border: 1.5px solid var(--saffron);
+  border-radius: var(--radius, 14px);
+  background: linear-gradient(180deg, rgba(232,130,30,0.06), rgba(232,130,30,0.02));
+}
+.signup-gate-title {
+  font-family: var(--font-display, serif);
+  font-size: 1.35rem;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+.signup-gate-lede { font-size: 1.05rem; color: var(--ink); margin: 0 0 12px; max-width: 60ch; }
+.signup-gate-why { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 20px; max-width: 62ch; }
+.signup-gate-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* --- Auth page email reassurance line (2026-07-14) ----------------------- */
+.auth-fineprint {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-align: center;
 }

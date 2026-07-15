@@ -4,7 +4,7 @@ export function RecipeCard(r) {
   const locked = r.locked && !isSignedIn();
   // Prefer the pretty slug, then the short code, then the uuid.
   const key = r.slug || r.short_code || r.id;
-  const href = locked ? '#/auth' : `#/recipe?id=${key}`;
+  const href = locked ? '/auth' : `/recipe/${key}`;
   const total = r.total_time || (r.prep_time || 0) + (r.cook_time || 0);
   return `
     <a class="card ${locked ? 'locked' : ''}" href="${href}">

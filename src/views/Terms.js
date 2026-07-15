@@ -1,6 +1,6 @@
 import { Header, Footer } from '../components/layout.js';
 
-// Route: #/terms → Thaali's terms of service. PUBLIC — no auth guard.
+// Route: /terms → Thaali's terms of service. PUBLIC — no auth guard.
 
 const UPDATED = 'June 23, 2026';
 
@@ -69,8 +69,8 @@ export function Terms() {
       <h2>Account deletion</h2>
       <p>
         You can request deletion of your account at any time from
-        <a href="#/account">Your account</a>. See our
-        <a href="#/privacy">Privacy Policy</a> for how data is handled when an
+        <a href="/account">Your account</a>. See our
+        <a href="/privacy">Privacy Policy</a> for how data is handled when an
         account is deleted.
       </p>
 
@@ -97,7 +97,7 @@ export function Terms() {
       <h2>Contact</h2>
       <p>
         Questions about these terms? Reach us through our
-        <a href="#/contact">contact form</a>.
+        <a href="/contact">contact form</a>.
       </p>
     </main>
     ${Footer()}

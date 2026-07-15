@@ -18,16 +18,16 @@ function headerAvatar() {
         ${inner}
       </button>
       <div class="nav-dropdown" data-avatar-dropdown hidden>
-        <a class="nav-dropdown-item" href="#/profile">Your profile</a>
-        <a class="nav-dropdown-item" href="#/account">Your account</a>
-        ${isAdmin() ? `<a class="nav-dropdown-item" href="#/admin">Moderation</a>` : ''}
+        <a class="nav-dropdown-item" href="/profile">Your profile</a>
+        <a class="nav-dropdown-item" href="/account">Your account</a>
+        ${isAdmin() ? `<a class="nav-dropdown-item" href="/admin">Moderation</a>` : ''}
         <button class="nav-dropdown-item" data-action="signout">Sign out</button>
       </div>
     </div>`;
 }
 
 // Centered search box. Only shown when signed in (everything is members-only).
-// Submitting routes to #/home?q=<term>; Home.js reads q as a text filter.
+// Submitting routes to /home?q=<term>; Home.js reads q as a text filter.
 // Wired by wireHeaderSearch(), called once from main.js after each render.
 function headerSearch() {
   if (!isSignedIn()) return '';
@@ -48,7 +48,7 @@ export function Header() {
   return `
     <header class="site-header">
       <div class="wrap">
-        <a class="brand" href="#/">
+        <a class="brand" href="/">
           <img class="brand-icon" src="/logo/thaali-logo-256.png" alt="Thaali" width="64" height="64" />
           <span class="brand-text">
             <span class="brand-mark">Thaali<span class="dot">.</span></span>
@@ -59,12 +59,12 @@ export function Header() {
         <nav class="nav-actions">
           ${
             signedIn
-              ? `<a class="btn btn-ghost" href="#/home">Browse</a>
-                 <a class="btn btn-ghost" href="#/news">News</a>
-                 <a class="btn btn-ghost" href="#/submit">Add a recipe</a>
+              ? `<a class="btn btn-ghost" href="/home">Browse</a>
+                 <a class="btn btn-ghost" href="/news">News</a>
+                 <a class="btn btn-ghost" href="/submit">Add a recipe</a>
                  ${headerAvatar()}`
-              : `<a class="btn btn-ghost" href="#/auth">Sign in</a>
-                 <a class="btn btn-primary" href="#/auth">Join free</a>`
+              : `<a class="btn btn-ghost" href="/auth">Sign in</a>
+                 <a class="btn btn-primary" href="/auth">Join free</a>`
           }
         </nav>
       </div>
@@ -78,8 +78,7 @@ export function Header() {
 export function prefillHeaderSearch() {
   const input = document.getElementById('header-search-input');
   if (!input) return;
-  const raw = location.hash.replace(/^#/, '');
-  const q = new URLSearchParams(raw.split('?')[1] || '').get('q');
+  const q = new URLSearchParams(location.search).get('q');
   input.value = q || '';
 }
 
@@ -93,9 +92,9 @@ export function Footer() {
         </div>
         <div class="footer-right">
           <nav class="footer-links" aria-label="Footer">
-            <a href="#/contact">Contact</a>
-            <a href="#/privacy">Privacy</a>
-            <a href="#/terms">Terms</a>
+            <a href="/contact">Contact</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
           </nav>
           <p class="footer-copy">© ${new Date().getFullYear()} · thaali.app</p>
         </div>

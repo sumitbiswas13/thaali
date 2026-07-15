@@ -11,11 +11,21 @@ import { currentUser } from './auth.js';
 // ---------------------------------------------------------------------------
 
 const TABLE = 'recipes';
+// Anon-safe view (public columns only, no author_email). Logged-out visitors
+// and crawlers read through this; the base table stays authenticated-only.
+const PUBLIC_TABLE = 'recipes_public';
+
+// Signed-in users read the base table (full columns incl. author_email for
+// their own rows); logged-out visitors read the public view. Both return the
+// same public-facing shape the views render.
+function readTable() {
+  return currentUser() ? TABLE : PUBLIC_TABLE;
+}
 
 export async function fetchRecipes() {
   if (!isSupabaseReady()) return [];
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(readTable())
     .select('*')
     .order('created_at', { ascending: false });
   if (error) throw error;
@@ -24,7 +34,7 @@ export async function fetchRecipes() {
 
 export async function fetchRecipe(id) {
   if (!isSupabaseReady()) return null;
-  const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).single();
+  const { data, error } = await supabase.from(readTable()).select('*').eq('id', id).single();
   if (error) throw error;
   return data;
 }

@@ -16,7 +16,7 @@ import {
   deleteBanner,
 } from '../lib/banner.js';
 
-// Route: #/admin → moderation queue (reports + deletion requests). Admin-only;
+// Route: /admin → moderation queue (reports + deletion requests). Admin-only;
 // non-admins are bounced to home. The destructive deletion action re-checks
 // admin server-side, so this guard is convenience, not the security boundary.
 
@@ -346,12 +346,12 @@ function reportCard(r) {
     r.kind === 'recipe'
       ? `<div class="admin-target">
            <span class="admin-kind">Recipe</span>
-           <a href="#/recipe?id=${esc(r.recipe_key)}">${esc(r.recipe_title)}</a>
+           <a href="/recipe/${esc(r.recipe_key)}">${esc(r.recipe_title)}</a>
          </div>`
       : `<div class="admin-target">
            <span class="admin-kind">Comment</span>
            <blockquote class="admin-quote">${esc(r.comment_body)}</blockquote>
-           ${r.recipe_key ? `<a href="#/recipe?id=${esc(r.recipe_key)}">View in context →</a>` : ''}
+           ${r.recipe_key ? `<a href="/recipe/${esc(r.recipe_key)}">View in context →</a>` : ''}
          </div>`;
 
   const open = r.status === 'open';

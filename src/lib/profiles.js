@@ -9,11 +9,19 @@ import { currentUser } from './auth.js';
 // ---------------------------------------------------------------------------
 
 const TABLE = 'profiles';
+// Anon-safe view (public columns only). Logged-out visitors and crawlers read
+// through this; the base table stays authenticated-only for writes/own reads.
+const PUBLIC_TABLE = 'profiles_public';
 const BUCKET = 'avatars';
+
+// Signed-in users read the base table; logged-out visitors read the public view.
+function readTable() {
+  return currentUser() ? TABLE : PUBLIC_TABLE;
+}
 
 export async function fetchProfile(id) {
   if (!isSupabaseReady() || !id) return null;
-  const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).maybeSingle();
+  const { data, error } = await supabase.from(readTable()).select('*').eq('id', id).maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -24,7 +32,7 @@ export async function fetchProfilesByIds(ids) {
   const map = new Map();
   const unique = [...new Set((ids || []).filter(Boolean))];
   if (!isSupabaseReady() || unique.length === 0) return map;
-  const { data, error } = await supabase.from(TABLE).select('*').in('id', unique);
+  const { data, error } = await supabase.from(readTable()).select('*').in('id', unique);
   if (error) throw error;
   for (const p of data || []) map.set(p.id, p);
   return map;

@@ -1,0 +1,11 @@
+# Thaali — a free, ad-free community cookbook. Crawlers welcome.
+User-agent: *
+Allow: /
+
+# Don't waste crawl budget on auth-gated app pages (no public content).
+Disallow: /auth
+Disallow: /submit
+Disallow: /account
+Disallow: /admin
+
+Sitemap: https://thaali.app/sitemap.xml

@@ -55,10 +55,10 @@ export function Landing() {
             <div class="hero-cta">
               ${
                 signedIn
-                  ? `<a class="btn btn-primary" href="#/home">Browse recipes</a>
-                     <a class="btn btn-ghost" href="#/submit">Add a recipe</a>`
-                  : `<a class="btn btn-primary" href="#/auth">Join free</a>
-                     <a class="btn btn-ghost" href="#/auth">Browse recipes</a>`
+                  ? `<a class="btn btn-primary" href="/home">Browse recipes</a>
+                     <a class="btn btn-ghost" href="/submit">Add a recipe</a>`
+                  : `<a class="btn btn-primary" href="/auth">Join free</a>
+                     <a class="btn btn-ghost" href="/auth">Browse recipes</a>`
               }
             </div>
             <p class="promise">No ads · No paywall · No data-selling · Forever</p>
@@ -98,7 +98,7 @@ export function Landing() {
                 <div class="count">${c.recipe_ids.length} recipe${c.recipe_ids.length === 1 ? '' : 's'}</div>`;
               // Link to the cook's profile only when we have a real author id.
               return c.author_id
-                ? `<a class="cook" href="#/profile?id=${c.author_id}">${inner}</a>`
+                ? `<a class="cook" href="/profile/${c.author_id}">${inner}</a>`
                 : `<div class="cook">${inner}</div>`;
             })
             .join('')}
@@ -131,7 +131,7 @@ function heroBanner(banner) {
       ? `<img class="hero-banner-img" src="${esc(r.image_url)}" alt="${esc(r.title)}" />`
       : `<div class="hero-banner-placeholder"><div class="platter"></div></div>`;
     return `
-      <a class="hero-banner hero-banner-dish" href="#/recipe?id=${esc(key)}">
+      <a class="hero-banner hero-banner-dish" href="/recipe/${esc(key)}">
         <span class="hero-banner-tag">Dish of the week</span>
         ${media}
         <span class="hero-banner-caption">

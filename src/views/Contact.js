@@ -121,7 +121,7 @@ export function Contact() {
           <h2>Message sent</h2>
           <p class="sub">Thanks for getting in touch. We read every note and will
           reply to <strong>${esc(email)}</strong> if a response is needed.</p>
-          <a class="btn btn-ghost" href="#/home">Back to recipes</a>
+          <a class="btn btn-ghost" href="/home">Back to recipes</a>
         `;
       } catch (err) {
         status.textContent = err.message || 'Could not send your message.';

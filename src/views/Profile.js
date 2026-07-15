@@ -8,8 +8,8 @@ import { COUNTRIES, countryName } from '../lib/categories.js';
 import { setCachedProfile } from '../lib/profileCache.js';
 import { fetchFollowState, toggleFollow } from '../lib/follows.js';
 
-// Route: #/profile           → own profile
-//        #/profile?id=<uid>  → another cook's profile
+// Route: /profile           → own profile
+//        /profile/<uid>      → another cook's profile
 export function Profile(params) {
   if (!isSignedIn()) {
     navigate('/auth');
@@ -71,7 +71,7 @@ function renderProfile(wrap, profile, isOwner) {
         ? `<div class="grid grid-compact">${theirRecipes.map(RecipeCard).join('')}</div>`
         : `<p class="muted">${
             isOwner
-              ? 'You haven’t posted a recipe yet. <a href="#/submit">Add your first →</a>'
+              ? 'You haven’t posted a recipe yet. <a href="/submit">Add your first →</a>'
               : 'This cook hasn’t posted any recipes yet.'
           }</p>`
     }

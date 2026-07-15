@@ -33,6 +33,30 @@ function fmt(v) {
     .replace(/\r?\n/g, '<br>');
 }
 
+// Signup gate shown to logged-out visitors below a recipe. States the promise
+// (free, no ads, no paywall, ever) and why an email is still needed — clearly,
+// in Thaali's voice. The recipe itself stays fully readable above this.
+function signupGate() {
+  return `
+    <section class="signup-gate">
+      <h3 class="signup-gate-title">Cook along with the community</h3>
+      <p class="signup-gate-lede">
+        You just read the whole recipe — no paywall, no sign-in wall. That's how
+        Thaali works, and always will: <strong>free, ad-free, no paywall, ever.</strong>
+      </p>
+      <p class="signup-gate-why">
+        We ask for an email for one reason — so you have an account. It's what lets
+        you like and comment, follow the cooks you love, and save and share your own
+        recipes. No ads, we never sell your data, and we'll only email you about your
+        account. That's the whole deal.
+      </p>
+      <div class="signup-gate-actions">
+        <a class="btn btn-primary" href="/auth">Join free</a>
+        <a class="btn btn-ghost" href="/auth">Sign in</a>
+      </div>
+    </section>`;
+}
+
 function timeAgo(iso) {
   const d = new Date(iso);
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
@@ -44,15 +68,15 @@ function timeAgo(iso) {
 }
 
 export function Recipe(params) {
-  if (!isSignedIn()) {
-    navigate('/auth');
-    return '';
-  }
+  // Recipe pages are PUBLIC (readable by anyone, incl. search engines). Logged-
+  // out visitors see the full recipe with a friendly signup gate on the social
+  // features (like/comment/report). Signed-in users get the full experience.
+  const signedIn = isSignedIn();
 
   // Resolve from slug, short_code, or raw uuid (back-compat with old links).
-  const r = findRecipe(params.id);
+  const r = findRecipe(params.slug || params.id);
   if (!r) {
-    navigate('/home');
+    navigate(signedIn ? '/home' : '/');
     return '';
   }
 
@@ -100,7 +124,7 @@ export function Recipe(params) {
 
   // Pretty short share URL — prefer slug, then short_code, then uuid.
   const shareKey = r.slug || r.short_code || r.id;
-  const shareUrl = `${location.origin}/#/recipe?id=${shareKey}`;
+  const shareUrl = `${location.origin}/recipe/${shareKey}`;
 
   onMount(() => {
     // --- lightbox: click hero or any thumbnail to view full image ---
@@ -136,6 +160,11 @@ export function Recipe(params) {
         alert('Delete failed: ' + err.message);
       }
     });
+
+    // Social features (like / report / comment posting) require sign-in. For
+    // logged-out visitors these controls are replaced by a signup gate in the
+    // markup, so there's nothing to wire — bail out of the interactive setup.
+    if (!signedIn) return;
 
     // --- like ---
     const likeBtn = document.querySelector('[data-action="like"]');
@@ -273,10 +302,10 @@ export function Recipe(params) {
         : '';
       return `
         <li class="comment" data-cid="${c.id}">
-          <a class="c-avatar" href="#/profile?id=${c.user_id}">${av}</a>
+          <a class="c-avatar" href="/profile/${c.user_id}">${av}</a>
           <div class="c-body">
             <div class="c-head">
-              <a class="c-name" href="#/profile?id=${c.user_id}">${esc(c.author_name)}</a>
+              <a class="c-name" href="/profile/${c.user_id}">${esc(c.author_name)}</a>
               <span class="c-time muted">${timeAgo(c.created_at)}</span>
               ${del}
               ${report}
@@ -395,21 +424,25 @@ export function Recipe(params) {
       }
 
       <div class="social-bar">
-        <button class="social-btn" data-action="like" aria-pressed="false">
-          <span class="like-heart">♡</span> <span id="like-count">0</span>
-        </button>
+        ${
+          signedIn
+            ? `<button class="social-btn" data-action="like" aria-pressed="false">
+                 <span class="like-heart">♡</span> <span id="like-count">0</span>
+               </button>`
+            : ''
+        }
         <button class="social-btn" data-action="share">
           <span>↗</span> <span class="share-label">Share</span>
         </button>
         ${
-          editable
-            ? ''
-            : `<button class="social-btn report-btn" data-action="report" title="Report this recipe">
+          signedIn && !editable
+            ? `<button class="social-btn report-btn" data-action="report" title="Report this recipe">
                  <span>⚑</span> <span class="report-label">Report</span>
                </button>`
+            : ''
         }
       </div>
-      ${editable ? '' : '<div class="report-form" id="report-form" hidden></div>'}
+      ${signedIn && !editable ? '<div class="report-form" id="report-form" hidden></div>' : ''}
 
       <div class="recipe-cols">
         <div>
@@ -424,7 +457,7 @@ export function Recipe(params) {
 
       <p class="byline" style="margin-top:32px;">Recipe by ${
         r.author_id
-          ? `<a class="byline-link" href="#/profile?id=${r.author_id}">${esc(r.author || 'A Thaali cook')}</a>`
+          ? `<a class="byline-link" href="/profile/${r.author_id}">${esc(r.author || 'A Thaali cook')}</a>`
           : esc(r.author || 'A Thaali cook')
       }</p>
       ${
@@ -435,13 +468,15 @@ export function Recipe(params) {
       ${
         editable
           ? `<div style="margin-top:16px;display:flex;gap:12px;">
-               <a class="btn btn-ghost" href="#/submit?edit=${r.slug || r.short_code || r.id}">Edit recipe</a>
+               <a class="btn btn-ghost" href="/submit?edit=${r.slug || r.short_code || r.id}">Edit recipe</a>
                <button class="btn btn-ghost" data-action="delete-recipe">Delete recipe</button>
              </div>`
           : ''
       }
 
-      <section class="comments-section">
+      ${
+        signedIn
+          ? `<section class="comments-section">
         <h3>Comments</h3>
         <div class="comment-compose">
           <textarea id="comment-input" rows="2" placeholder="Add a comment…" maxlength="2000"></textarea>
@@ -451,7 +486,9 @@ export function Recipe(params) {
           </div>
         </div>
         <ul class="comment-list" id="comment-list"><li class="muted">Loading comments…</li></ul>
-      </section>
+      </section>`
+          : signupGate()
+      }
 
       <div class="lightbox" id="lightbox" hidden>
         <button class="lightbox-close" data-action="close-lightbox" aria-label="close">×</button>

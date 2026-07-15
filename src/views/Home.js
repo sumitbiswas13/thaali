@@ -294,7 +294,7 @@ export function Home(params = {}) {
           ${recipes.map(RecipeCard).join('')}
         </div>
         <nav class="pager" id="pager" aria-label="Pagination" hidden></nav>`
-          : `<p class="muted">No recipes yet. <a href="#/submit">Add the first →</a></p>
+          : `<p class="muted">No recipes yet. <a href="/submit">Add the first →</a></p>
              <div class="grid grid-compact" id="recipe-grid" hidden></div>
              <nav class="pager" id="pager" hidden></nav>
              <span id="result-count" hidden></span>`
