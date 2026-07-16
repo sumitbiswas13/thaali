@@ -147,17 +147,51 @@ export function Recipe(params) {
       if (e.target === lightbox) closeLightbox(); // click backdrop to dismiss
     });
 
-    // --- delete recipe ---
-    document.querySelector('[data-action="delete-recipe"]')?.addEventListener('click', async (e) => {
-      if (!confirm(`Delete "${r.title}"? This can't be undone.`)) return;
-      e.target.disabled = true;
+    // --- delete recipe (in-app confirmation modal, not native confirm) ---
+    const deleteModal = document.querySelector('#delete-modal');
+    const openDelete = document.querySelector('[data-action="delete-recipe"]');
+    const cancelDelete = document.querySelector('[data-action="delete-cancel"]');
+    const confirmDelete = document.querySelector('[data-action="delete-confirm"]');
+    const deleteStatus = document.querySelector('#delete-status');
+
+    function showDeleteModal() {
+      if (!deleteModal) return;
+      deleteModal.hidden = false;
+      confirmDelete?.focus();
+      document.addEventListener('keydown', onDeleteKey);
+    }
+    function hideDeleteModal() {
+      if (!deleteModal) return;
+      deleteModal.hidden = true;
+      document.removeEventListener('keydown', onDeleteKey);
+      openDelete?.focus();
+    }
+    function onDeleteKey(ev) {
+      if (ev.key === 'Escape') hideDeleteModal();
+    }
+
+    openDelete?.addEventListener('click', showDeleteModal);
+    cancelDelete?.addEventListener('click', hideDeleteModal);
+    // Click the dark backdrop (outside the card) to dismiss.
+    deleteModal?.addEventListener('click', (ev) => {
+      if (ev.target === deleteModal) hideDeleteModal();
+    });
+
+    confirmDelete?.addEventListener('click', async () => {
+      confirmDelete.disabled = true;
+      if (cancelDelete) cancelDelete.disabled = true;
+      if (deleteStatus) deleteStatus.textContent = 'Deleting…';
       try {
         await deleteRecipe(r.id);
         await loadRecipes();
         navigate('/home');
       } catch (err) {
-        e.target.disabled = false;
-        alert('Delete failed: ' + err.message);
+        confirmDelete.disabled = false;
+        if (cancelDelete) cancelDelete.disabled = false;
+        if (deleteStatus) {
+          deleteStatus.textContent = 'Delete failed: ' + err.message;
+          deleteStatus.className = 'modal-status import-msg warn';
+        }
       }
     });
 
@@ -494,6 +528,21 @@ export function Recipe(params) {
         <button class="lightbox-close" data-action="close-lightbox" aria-label="close">×</button>
         <img class="lightbox-img" id="lightbox-img" src="" alt="" />
       </div>
+      ${
+        editable
+          ? `<div class="modal-overlay" id="delete-modal" hidden role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+        <div class="modal-card">
+          <h3 id="delete-modal-title">Delete this recipe?</h3>
+          <p class="modal-body">“${esc(r.title)}” will be permanently removed. This can’t be undone.</p>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" data-action="delete-cancel">Cancel</button>
+            <button class="btn btn-danger" data-action="delete-confirm">Delete recipe</button>
+          </div>
+          <p class="modal-status import-msg" id="delete-status"></p>
+        </div>
+      </div>`
+          : ''
+      }
     </main>
     ${Footer()}
   `;

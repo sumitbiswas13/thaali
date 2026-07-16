@@ -503,13 +503,22 @@ function wireForm(wrap, formState) {
     status.className = 'auth-status';
     status.textContent = formState.editingId ? 'Saving…' : 'Publishing…';
     try {
+      let saved;
       if (formState.editingId) {
-        await updateRecipe(formState.editingId, recipe);
+        saved = await updateRecipe(formState.editingId, recipe);
       } else {
-        await createRecipe(recipe);
+        saved = await createRecipe(recipe);
       }
       await loadRecipes();
-      navigate('/home');
+      if (formState.editingId) {
+        // After an edit, show the updated recipe itself.
+        const key = saved?.slug || saved?.short_code || saved?.id || formState.editingId;
+        navigate('/recipe/' + key);
+      } else {
+        // After creating a new recipe, land on the cook's own profile — the new
+        // recipe appears at the top of "Your recipes" (loaded newest-first).
+        navigate('/profile');
+      }
     } catch (err) {
       e.target.disabled = false;
       status.textContent = (formState.editingId ? 'Save' : 'Publish') + ' failed: ' + err.message;
