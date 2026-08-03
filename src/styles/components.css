@@ -1453,6 +1453,7 @@ a.cook:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(32,25,2
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
 }
+.modal-overlay[hidden] { display: none; }
 .modal-card {
   background: var(--paper, #fff); border-radius: var(--radius, 14px);
   border: 1px solid var(--line); max-width: 420px; width: 100%;
