@@ -26,10 +26,18 @@ jobs:
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' \
+          if [ -z "$BREVO_API_KEY" ]; then
+            echo "BREVO_API_KEY secret is empty or missing"; exit 1
+          fi
+          echo "Key length: ${#BREVO_API_KEY}, prefix: ${BREVO_API_KEY:0:8}"
+          code=$(curl -s -o resp.json -w '%{http_code}' \
             -H "api-key: $BREVO_API_KEY" \
             -H "accept: application/json" \
             https://api.brevo.com/v3/account)
           echo "Brevo responded: $code"
-          # Fail the run (GitHub emails you) if the key is rejected.
-          test "$code" = "200"
+          if [ "$code" != "200" ]; then
+            # Only Brevo's error code/message — never the account body,
+            # since logs on a public repo are public.
+            jq -r '"Brevo says: \(.code // "?") — \(.message // "?")"' resp.json || true
+            exit 1
+          fi
