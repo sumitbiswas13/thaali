@@ -139,22 +139,45 @@ function parseRssItems(xml) {
     const desc = stripTags(getTag(block, 'description'));
     const date = stripTags(getTag(block, 'pubDate'));
     const author = stripTags(getTag(block, 'dc:creator') || getTag(block, 'creator'));
-    // RSS media thumbnail, if present.
-    const mediaMatch =
-      block.match(/<media:content[^>]*url="([^"]+)"/i) ||
-      block.match(/<media:thumbnail[^>]*url="([^"]+)"/i) ||
-      block.match(/<enclosure[^>]*url="([^"]+)"/i);
     out.push({
       title,
       summary: desc,
       url: link,
-      image: mediaMatch ? mediaMatch[1] : null,
+      image: pickRssImage(block),
       author,
       published: date ? new Date(date).toISOString() : null,
       section: 'Food',
     });
   }
   return out;
+}
+
+// Pick the widest <media:content> image in an RSS item.
+// Guardian image URLs are signed (…&s=<hash>), and inside XML the `&` is
+// escaped as `&amp;`. If we don't decode it, the `s` param arrives as
+// `amp;s`, the signature check fails and i.guim.co.uk returns 401 — which
+// shows up as a broken image. The feed also lists a tiny 140px variant
+// first, so prefer the largest width on offer.
+function pickRssImage(block) {
+  const decode = (u) => u.replace(/&amp;/g, '&');
+  const candidates = [];
+  const re = /<media:content\b([^>]*)>/gi;
+  let m;
+  while ((m = re.exec(block))) {
+    const attrs = m[1];
+    const url = attrs.match(/\burl="([^"]+)"/i);
+    if (!url) continue;
+    const w = attrs.match(/\bwidth="(\d+)"/i);
+    candidates.push({ url: decode(url[1]), w: w ? parseInt(w[1], 10) : 0 });
+  }
+  if (candidates.length) {
+    candidates.sort((a, b) => b.w - a.w);
+    return candidates[0].url;
+  }
+  const fallback =
+    block.match(/<media:thumbnail[^>]*url="([^"]+)"/i) ||
+    block.match(/<enclosure[^>]*url="([^"]+)"/i);
+  return fallback ? decode(fallback[1]) : null;
 }
 
 function getTag(block, tag) {
